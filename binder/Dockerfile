@@ -8,8 +8,9 @@ ENV ROS_WS=${HOME}/workspace/ros
 # Examples:
 
 # USER root
-# RUN apt update && apt install -y curl
-# RUN pip install numpy
+ RUN apt update && apt install -y curl
+ RUN pip install numpy
+ RUN pip install matplotlib
 #===========================================================#
 
 # Copy content to the image
