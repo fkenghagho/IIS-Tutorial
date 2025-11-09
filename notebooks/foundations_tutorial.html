@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 1: Challenges</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter Font -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="bg-white shadow-2xl rounded-xl p-8 max-w-6xl w-full">
+        <header class="text-center mb-8">
+            <p class="text-gray-600 mt-2">Interactive Quiz: Match the Component to its Core Function and Core Challenge.</p>
+        </header>
+
+        <!-- Table Headers -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 p-3 bg-indigo-50 rounded-t-lg font-bold text-indigo-800 text-sm uppercase tracking-wider">
+            <div>Component</div>
+            <div>Core Function (Role)</div>
+            <div>Core Challenge</div>
+        </div>
+
+        <!-- Quiz Section -->
+        <section class="space-y-0" id="quiz-container">
+            <!-- Questions will be injected here by JavaScript -->
+        </section>
+
+        <!-- Feedback and Control -->
+        <div class="mt-8 flex flex-col sm:flex-row justify-center sm:space-x-4 space-y-4 sm:space-y-0">
+            <button id="check-answers" 
+                    class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.02]">
+                Check Answers
+            </button>
+            <button id="reset-quiz" 
+                    class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 transition duration-150 transform hover:scale-[1.02]">
+                Reset Quiz
+            </button>
+        </div>
+
+        <!-- Result Display -->
+        <div id="results" class="mt-6 p-4 bg-white border-2 border-dashed border-indigo-200 rounded-lg text-center hidden">
+            <p class="text-xl font-bold text-indigo-800" id="score-text">Results will appear here.</p>
+            <p class="text-sm text-gray-500 mt-2" id="feedback-text"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- Data Definitions ---
+        const components = [
+            "Sensors", 
+            "Perception", 
+            "Probabilistic State Estimation", 
+            "Task Planning", 
+            "Knowledge Representation",
+            "Motion Control",
+            "Effectors",
+            "Robot Learning",
+            "Cognitive Architecture"
+        ];
+
+        // New: Core Functions (Roles)
+        const roles = {
+            "Sensors": "Collect raw data from the environment.", 
+            "Perception": "Convert raw data into meaningful world representations.", 
+            "Probabilistic State Estimation": "Maintain an inner, accurate, probabilistic model of the real world (Belief State).", 
+            "Task Planning": "Determine the optimal sequence of actions to achieve a goal.", 
+            "Knowledge Representation": "Store structured information about context, objects, and procedures.",
+            "Motion Control": "Compute precise physical movements to execute an action (collision, pose, velocities, efforts).",
+            "Effectors": "The physical actuators that execute the motion (motors, grippers).",
+            "Robot Learning": "Improve capabilities and speed up reasoning through experiences.",
+            "Cognitive Architecture": "Orchestrate all components to achieve autonomy and cope with application constraints."
+        };
+
+        // Existing: Core Challenges
+        const challenges = {
+            "Sensors": "Data is inherently noisy.", 
+            "Perception": "Coping with variability in views (occlusions, lighting).", 
+            "Probabilistic State Estimation": "Alignment of the inner model (Belief State) with noisy reality.", 
+            "Task Planning": "Inferring the correct action sequences and setting parameters.", 
+            "Knowledge Representation": "Managing various contexts and efficient retrieval.",
+            "Motion Control": "Planning collision-free paths in a high-dimensional space.",
+            "Effectors": "Effort required to move objects; precision needed for grasping.",
+            "Robot Learning": "Overcoming the simulation-to-reality gap.",
+            "Cognitive Architecture": "Balancing generality with computational time-efficiency."
+        };
+
+        // --- Core Functions ---
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Helper to create and populate a dropdown
+        function createDropdown(id, options, placeholderText, disabled) {
+            const select = document.createElement('select');
+            select.id = id;
+            select.disabled = disabled;
+            select.className = 'w-full p-2 border border-gray-300 rounded-md text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500 transition duration-100';
+
+            // 1. Create and select the placeholder option
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = ""; // Empty value indicates no selection made
+            placeholderOption.textContent = placeholderText;
+            placeholderOption.selected = true; // Set as default selected
+            placeholderOption.disabled = true; // Prevent selection after first choice
+            select.appendChild(placeholderOption);
+
+            // 2. Add the shuffled options
+            options.forEach(optionText => {
+                const option = document.createElement('option');
+                option.value = optionText;
+                option.textContent = optionText;
+                select.appendChild(option);
+            });
+            return select;
+        }
+
+        // Generates the quiz HTML with the placeholder selected
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            let shuffledRoles = Object.values(roles);
+            shuffleArray(shuffledRoles);
+
+            let shuffledChallenges = Object.values(challenges);
+            shuffleArray(shuffledChallenges);
+
+            components.forEach((component, index) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.id = `q-${index}`;
+                // Use a 3-column grid to match the headers
+                rowDiv.className = 'grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-4 p-4 border-b border-gray-200 bg-white hover:bg-gray-50 transition duration-100';
+
+                // --- 1. Component Label ---
+                const componentLabel = document.createElement('div');
+                componentLabel.className = 'flex items-center text-base font-semibold text-gray-800';
+                componentLabel.textContent = component;
+                rowDiv.appendChild(componentLabel);
+
+                // --- 2. Role Dropdown & Feedback ---
+                const roleContainer = document.createElement('div');
+                roleContainer.className = 'flex items-center space-x-2';
+                // Pass the placeholder text to the helper
+                const roleSelect = createDropdown(`select-role-${index}`, shuffledRoles, "-- Select Role/Function --", false);
+                
+                const feedbackRole = document.createElement('span');
+                feedbackRole.id = `feedback-role-${index}`;
+                feedbackRole.className = 'text-2xl font-bold hidden w-6';
+
+                roleContainer.appendChild(roleSelect);
+                roleContainer.appendChild(feedbackRole);
+                rowDiv.appendChild(roleContainer);
+
+
+                // --- 3. Challenge Dropdown & Feedback ---
+                const challengeContainer = document.createElement('div');
+                challengeContainer.className = 'flex items-center space-x-2';
+                // Pass the placeholder text to the helper
+                const challengeSelect = createDropdown(`select-challenge-${index}`, shuffledChallenges, "-- Select Challenge --", false);
+                
+                const feedbackChallenge = document.createElement('span');
+                feedbackChallenge.id = `feedback-challenge-${index}`;
+                feedbackChallenge.className = 'text-2xl font-bold hidden w-6';
+                
+                challengeContainer.appendChild(challengeSelect);
+                challengeContainer.appendChild(feedbackChallenge);
+                rowDiv.appendChild(challengeContainer);
+
+                container.appendChild(rowDiv);
+            });
+        }
+
+        // Checks the answers (Total items = 9 components * 2 matches = 18)
+        function checkAnswers() {
+            let correctCount = 0;
+            const numQuestions = components.length * 2;
+            let allAnswersSelected = true;
+
+            components.forEach((component, index) => {
+                const rowDiv = document.getElementById(`q-${index}`);
+                rowDiv.classList.remove('bg-green-50', 'bg-red-50');
+
+                // 1. Check Role
+                const selectRole = document.getElementById(`select-role-${index}`);
+                const feedbackRole = document.getElementById(`feedback-role-${index}`);
+                const userRole = selectRole.value;
+                const correctRole = roles[component];
+
+                // 2. Check Challenge
+                const selectChallenge = document.getElementById(`select-challenge-${index}`);
+                const feedbackChallenge = document.getElementById(`feedback-challenge-${index}`);
+                const userChallenge = selectChallenge.value;
+                const correctChallenge = challenges[component];
+
+                // Check if all answers are selected (not using the placeholder's empty value)
+                if (userRole === "" || userChallenge === "") {
+                    allAnswersSelected = false;
+                    return; // Skip feedback for this row if not fully answered
+                }
+
+                selectRole.disabled = true;
+                selectChallenge.disabled = true;
+
+                // Role Feedback
+                feedbackRole.classList.remove('hidden', 'text-green-600', 'text-red-600');
+                if (userRole === correctRole) {
+                    correctCount++;
+                    feedbackRole.textContent = '✓';
+                    feedbackRole.classList.add('text-green-600');
+                } else {
+                    feedbackRole.textContent = '✕';
+                    feedbackRole.classList.add('text-red-600');
+                }
+
+                // Challenge Feedback
+                feedbackChallenge.classList.remove('hidden', 'text-green-600', 'text-red-600');
+                if (userChallenge === correctChallenge) {
+                    correctCount++;
+                    feedbackChallenge.textContent = '✓';
+                    feedbackChallenge.classList.add('text-green-600');
+                } else {
+                    feedbackChallenge.textContent = '✕';
+                    feedbackChallenge.classList.add('text-red-600');
+                }
+                
+                // Row highlight based on overall correctness for the component
+                if (userRole === correctRole && userChallenge === correctChallenge) {
+                     rowDiv.classList.add('bg-green-50');
+                } else if (userRole !== correctRole || userChallenge !== correctChallenge) {
+                     rowDiv.classList.add('bg-red-50');
+                }
+            });
+
+            if (!allAnswersSelected) {
+                // Display error if not all questions are answered
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.classList.remove('hidden');
+                document.getElementById('score-text').textContent = "Please select an answer for every item before checking.";
+                document.getElementById('feedback-text').textContent = "";
+                resultsDiv.classList.add('border-red-500');
+                // Re-enable selections and button if incomplete
+                document.getElementById('check-answers').disabled = false;
+                document.querySelectorAll('select').forEach(s => s.disabled = false);
+            } else {
+                displayResults(correctCount, numQuestions);
+            }
+        }
+
+        // Displays the summary results
+        function displayResults(correctCount, totalCount) {
+            const resultsDiv = document.getElementById('results');
+            const scoreText = document.getElementById('score-text');
+            const feedbackText = document.getElementById('feedback-text');
+            
+            const percentage = Math.round((correctCount / totalCount) * 100);
+            
+            scoreText.textContent = `Score: ${correctCount} / ${totalCount} (${percentage}%)`;
+
+            resultsDiv.classList.remove('border-indigo-200', 'border-green-500', 'border-yellow-500', 'border-red-500');
+
+            if (percentage === 100) {
+                feedbackText.textContent = "Excellent! You have mastered the fundamental functions and challenges of all Integrated Intelligent Systems components.";
+                resultsDiv.classList.add('border-green-500');
+            } else if (percentage >= 70) {
+                feedbackText.textContent = "Great job! Review the concepts you missed to solidify your foundation.";
+                resultsDiv.classList.add('border-yellow-500');
+            } else {
+                feedbackText.textContent = "Keep studying. Focus on understanding the primary limitation and function of each component.";
+                resultsDiv.classList.add('border-red-500');
+            }
+
+            resultsDiv.classList.remove('hidden');
+        }
+
+        // Resets the quiz
+        function resetQuiz() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.classList.add('hidden');
+            
+            // Clear row backgrounds
+            document.querySelectorAll('#quiz-container > div').forEach(q => {
+                q.classList.remove('bg-green-50', 'bg-red-50');
+            });
+
+            renderQuiz(); // Re-render to clear all selections and restore defaults
+            
+            // Clear feedback spans
+            document.querySelectorAll('[id^="feedback-"]').forEach(span => span.classList.add('hidden'));
+
+            // Re-enable the check button
+            document.getElementById('check-answers').disabled = false;
+        }
+
+        // --- Event Listeners and Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuiz();
+            document.getElementById('check-answers').addEventListener('click', checkAnswers);
+            document.getElementById('reset-quiz').addEventListener('click', resetQuiz);
+        });
+
+    </script>
+</body>
+</html>

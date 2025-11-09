@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Grounding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Style for the draggable labels */
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            @apply p-2 bg-indigo-50 border-2 border-indigo-400 text-indigo-800 font-medium rounded-lg shadow-md transition duration-150 text-center text-sm;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        /* Style for the drop targets (Question boxes) */
+        .drop-target-container {
+            @apply flex items-center bg-white border border-gray-200 rounded-lg p-3 shadow-sm;
+        }
+        .drop-box {
+            width: 150px; /* Fixed width for consistency */
+            height: 40px;
+            @apply flex items-center justify-center border-2 border-dashed border-gray-400 rounded-md ml-4 text-xs font-semibold text-gray-500 transition duration-200 flex-shrink-0;
+        }
+        .drop-box.hovering {
+            @apply border-indigo-500 bg-indigo-100;
+        }
+        .drop-box.filled {
+            @apply border-solid border-green-500 bg-green-200 text-green-800;
+        }
+        .drop-box.correct {
+            @apply border-green-700 bg-green-500 text-white font-bold;
+        }
+        .drop-box.incorrect {
+            @apply border-red-700 bg-red-500 text-white font-bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 flex items-center justify-center">
+
+    <div id="mapper-app" class="bg-white shadow-2xl rounded-2xl p-6 md:p-10 max-w-7xl w-full">
+        <header class="text-center mb-8">
+            <p class="text-gray-600 mt-2">Map the 10 system components to the cognitive questions they are responsible for answering in the **Sense -> Reason -> Plan -> Act** loop.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <!-- Draggable Components List -->
+            <div class="md:col-span-1 p-4 bg-gray-100 rounded-xl space-y-2 order-2 md:order-1 h-full">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">Cognitive Modules (10)</h2>
+                <div id="drag-labels" class="grid grid-cols-2 md:grid-cols-1 gap-2">
+                    <div id="label-perception" draggable="true" class="draggable-item" data-module="Perception">Perception (Image/Data)</div>
+                    <div id="label-state-estimation" draggable="true" class="draggable-item" data-module="State Estimation">State Estimation (P(X))</div>
+                    <div id="label-knowledge-base" draggable="true" class="draggable-item" data-module="Knowledge Base">Knowledge Base (KB)</div>
+                    <div id="label-reasoning" draggable="true" class="draggable-item" data-module="Reasoning">High-Level Reasoning</div>
+                    <div id="label-action-selection" draggable="true" class="draggable-item" data-module="Action Selection">Action Selection (Task Plan)</div>
+                    <div id="label-learning" draggable="true" class="draggable-item" data-module="Learning">Learning & Experience</div>
+                    <div id="label-motion-planning" draggable="true" class="draggable-item" data-module="Motion Planning">Motion Planning (Path)</div>
+                    <div id="label-low-level-control" draggable="true" class="draggable-item" data-module="Low-Level Control">Low-Level Control (Signals)</div>
+                    <div id="label-sensors" draggable="true" class="draggable-item" data-module="Sensors">Physical Sensing</div>
+                    <div id="label-effectors" draggable="true" class="draggable-item" data-module="Effectors">Physical Effectors</div>
+                </div>
+            </div>
+
+            <!-- Robot Image and Questions/Targets -->
+            <div class="md:col-span-4 grid grid-cols-1 lg:grid-cols-2 gap-6 order-1 md:order-2">
+                
+                <!-- Robot Image (Left Column) -->
+                <div class="lg:col-span-1 p-4 bg-gray-200 rounded-xl flex flex-col items-center justify-center">
+                    <h2 class="text-xl font-bold text-gray-700 mb-4">Embodied & Situated Agent</h2>
+                    <img width=50px
+                         height= 50px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/robot.png" 
+                         alt="A complex robot performing a manipulation task." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-indigo-500">
+                    <p class="mt-2 text-sm text-gray-500 text-center">The IIS Agent is constantly processing information and acting.</p>
+                </div>
+
+                <!-- Questions/Drop Targets (Right Column) -->
+                <div id="drop-targets" class="lg:col-span-1 space-y-3">
+                    <h2 class="text-xl font-bold text-gray-700 mb-3 border-b pb-2">IIS Core Questions</h2>
+
+                    <!-- 1. Sensing -->
+                    <div class="drop-target-container" data-accept="sensors">
+                        <span class="text-gray-700 flex-grow">1. What raw physical data is entering the system?</span>
+                        <div id="target-sensors" class="drop-box">Drop Module Here (Sense)</div>
+                    </div>
+
+                    <!-- 2. Perception -->
+                    <div class="drop-target-container" data-accept="perception">
+                        <span class="text-gray-700 flex-grow">2. What specific objects, colors, and features do I see?</span>
+                        <div id="target-perception" class="drop-box">Drop Module Here (Sense)</div>
+                    </div>
+
+                    <!-- 3. State Estimation -->
+                    <div class="drop-target-container" data-accept="state-estimation">
+                        <span class="text-gray-700 flex-grow">3. **Where am I?** (And where are the objects relative to me?)</span>
+                        <div id="target-state-estimation" class="drop-box">Drop Module Here (Reason)</div>
+                    </div>
+
+                    <!-- 4. Knowledge Base -->
+                    <div class="drop-target-container" data-accept="knowledge-base">
+                        <span class="text-gray-700 flex-grow">4. What facts and models do I know about the task/world?</span>
+                        <div id="target-knowledge-base" class="drop-box">Drop Module Here (Reason)</div>
+                    </div>
+
+                    <!-- 5. Reasoning -->
+                    <div class="drop-target-container" data-accept="reasoning">
+                        <span class="text-gray-700 flex-grow">5. Which task goal should I prioritize next given the current state?</span>
+                        <div id="target-reasoning" class="drop-box">Drop Module Here (Reason)</div>
+                    </div>
+                    
+                    <!-- 6. Learning -->
+                    <div class="drop-target-container" data-accept="learning">
+                        <span class="text-gray-700 flex-grow">6. How can I optimize this task based on past experiences?</span>
+                        <div id="target-learning" class="drop-box">Drop Module Here (Reason/Plan)</div>
+                    </div>
+
+                    <!-- 7. Action Selection -->
+                    <div class="drop-target-container" data-accept="action-selection">
+                        <span class="text-gray-700 flex-grow">7. What is the full sequence of actions to achieve the task?</span>
+                        <div id="target-action-selection" class="drop-box">Drop Module Here (Plan)</div>
+                    </div>
+
+                    <!-- 8. Motion Planning -->
+                    <div class="drop-target-container" data-accept="motion-planning">
+                        <span class="text-gray-700 flex-grow">8. What is the precise, collision-free path for my arm/wheel?</span>
+                        <div id="target-motion-planning" class="drop-box">Drop Module Here (Plan)</div>
+                    </div>
+
+                    <!-- 9. Low-Level Control -->
+                    <div class="drop-target-container" data-accept="low-level-control">
+                        <span class="text-gray-700 flex-grow">9. How do I translate the path into motor torques/velocities?</span>
+                        <div id="target-low-level-control" class="drop-box">Drop Module Here (Act)</div>
+                    </div>
+                    
+                    <!-- 10. Effectors -->
+                    <div class="drop-target-container" data-accept="effectors">
+                        <span class="text-gray-700 flex-grow">10. What physical mechanism executes the final movement?</span>
+                        <div id="target-effectors" class="drop-box">Drop Module Here (Act)</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls and Results -->
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-8">
+            <button id="check-btn" 
+                    class="px-8 py-3 bg-green-600 text-white font-bold rounded-lg shadow-xl hover:bg-green-700 transition duration-150 transform hover:scale-[1.02]">
+                Check Mapping
+            </button>
+            <button id="reset-btn" 
+                    class="px-8 py-3 bg-gray-300 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-400 transition duration-150">
+                Reset
+            </button>
+        </div>
+        
+        <div id="results-display" class="mt-6 p-4 text-center text-xl font-semibold border-2 rounded-lg hidden"></div>
+    </div>
+
+    <script>
+        const dragLabelsContainer = document.getElementById('drag-labels');
+        const dropContainers = document.querySelectorAll('#drop-targets > .drop-target-container');
+        const checkBtn = document.getElementById('check-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const resultsDisplay = document.getElementById('results-display');
+        
+        let originalLabels = []; // To store initial labels for reset
+
+        function initializeLabels() {
+            originalLabels = Array.from(document.querySelectorAll('#drag-labels > div')).map(el => ({
+                id: el.id,
+                text: el.textContent,
+                module: el.dataset.module
+            }));
+            resetMapping();
+        }
+
+        let draggedId = null;
+
+        // --- Drag Functionality ---
+        dragLabelsContainer.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('draggable-item')) {
+                draggedId = e.target.id;
+                e.dataTransfer.setData('text/plain', draggedId);
+                e.target.classList.add('opacity-50');
+            }
+        });
+
+        dragLabelsContainer.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('draggable-item')) {
+                e.target.classList.remove('opacity-50');
+            }
+        });
+        
+        // --- Drop Functionality ---
+        dropContainers.forEach(container => {
+            const dropBox = container.querySelector('.drop-box');
+            
+            dropBox.addEventListener('dragover', (e) => {
+                e.preventDefault(); 
+                dropBox.classList.add('hovering');
+            });
+
+            dropBox.addEventListener('dragleave', () => {
+                dropBox.classList.remove('hovering');
+            });
+
+            dropBox.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropBox.classList.remove('hovering');
+                
+                const data = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(data);
+                
+                if (draggedElement && !dropBox.classList.contains('filled')) {
+                    // Clear previous content if any
+                    dropBox.innerHTML = draggedElement.textContent;
+
+                    // Set state
+                    dropBox.classList.add('filled');
+                    dropBox.setAttribute('data-current-id', data);
+                    
+                    // Hide the original label
+                    draggedElement.style.display = 'none';
+                }
+            });
+        });
+
+        // --- Check and Reset Logic ---
+
+        function checkMapping() {
+            let correctCount = 0;
+            let totalTargets = dropContainers.length;
+            let allFilled = true;
+            
+            resultsDisplay.classList.remove('hidden', 'border-green-500', 'border-red-500', 'text-green-800', 'text-red-800');
+
+            dropContainers.forEach(container => {
+                const dropBox = container.querySelector('.drop-box');
+                const currentLabelId = dropBox.getAttribute('data-current-id');
+                const acceptedType = container.dataset.accept; // e.g., 'sensors'
+
+                dropBox.classList.remove('correct', 'incorrect');
+                
+                if (!currentLabelId) {
+                    allFilled = false;
+                    return;
+                }
+                
+                // Get the dragged module type from its ID (e.g., 'label-perception' -> 'perception')
+                const draggedModuleType = currentLabelId.substring(6); 
+                
+                if (draggedModuleType === acceptedType) {
+                    dropBox.classList.add('correct');
+                    correctCount++;
+                } else {
+                    dropBox.classList.add('incorrect');
+                }
+            });
+
+            if (!allFilled) {
+                resultsDisplay.textContent = "Please place all 10 modules before checking.";
+                resultsDisplay.classList.add('border-red-500', 'text-red-800');
+            } else {
+                const percentage = Math.round((correctCount / totalTargets) * 100);
+                resultsDisplay.textContent = `Score: ${correctCount}/${totalTargets} (${percentage}%)`;
+                
+                if (correctCount === totalTargets) {
+                    resultsDisplay.textContent += " — Perfect! You fully grasp the 10 core modules of the IIS Cognitive Loop.";
+                    resultsDisplay.classList.add('border-green-500', 'text-green-800');
+                } else {
+                    resultsDisplay.textContent += " — Review your logic! Ensure you are mapping the question to the module that provides the most direct answer.";
+                    resultsDisplay.classList.add('border-red-500', 'text-red-800');
+                }
+            }
+        }
+
+        function resetMapping() {
+            resultsDisplay.classList.add('hidden');
+            
+            // 1. Reset all drop targets
+            dropContainers.forEach(container => {
+                const dropBox = container.querySelector('.drop-box');
+                dropBox.classList.remove('filled', 'correct', 'incorrect');
+                dropBox.removeAttribute('data-current-id');
+                dropBox.textContent = dropBox.id.includes('sensors') || dropBox.id.includes('effectors') ? 'Drop Module Here (Physical)' : 'Drop Module Here (Cognitive)';
+                
+                // Set the correct label based on the IIS stage
+                let stage = 'Cognitive';
+                if (container.dataset.accept === 'sensors' || container.dataset.accept === 'effectors') {
+                    stage = 'Physical';
+                } else if (container.dataset.accept === 'perception') {
+                    stage = 'Sense';
+                } else if (container.dataset.accept.includes('estimation') || container.dataset.accept.includes('base') || container.dataset.accept.includes('reasoning') || container.dataset.accept.includes('learning')) {
+                    stage = 'Reason';
+                } else if (container.dataset.accept.includes('selection') || container.dataset.accept.includes('planning')) {
+                    stage = 'Plan';
+                } else if (container.dataset.accept.includes('control')) {
+                    stage = 'Act';
+                }
+
+                dropBox.textContent = `Drop Module Here (${stage})`;
+            });
+
+            // 2. Reset and re-add all draggable labels
+            dragLabelsContainer.innerHTML = '';
+            // Shuffle the labels before re-adding them
+            let shuffledLabels = [...originalLabels];
+            shuffledLabels.sort(() => Math.random() - 0.5);
+
+            shuffledLabels.forEach(data => {
+                const div = document.createElement('div');
+                div.id = data.id;
+                div.draggable = true;
+                div.className = 'draggable-item';
+                div.textContent = data.text;
+                div.dataset.module = data.module;
+                dragLabelsContainer.appendChild(div);
+            });
+        }
+
+        // --- Event Listeners and Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeLabels(); // Setup initial state and reset function
+            checkBtn.addEventListener('click', checkMapping);
+            resetBtn.addEventListener('click', resetMapping);
+        });
+    </script>
+</body>
+</html>

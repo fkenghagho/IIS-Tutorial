@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="bg-white shadow-2xl rounded-xl p-8 max-w-4xl w-full">
+        <header class="text-center mb-8">
+            <p class="text-gray-600 mt-2">Test your understanding of the core definitions and practical cases.</p>
+        </header>
+
+        <!-- Definitions Section -->
+        <div class="space-y-4 mb-8 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
+            <p class="text-sm">
+                <strong class="text-indigo-800">Intelligent Agent:</strong> A system that senses the environment and acts upon it towards the achievement of a goal. (The broad definition)
+            </p>
+            <p class="text-sm">
+                <strong class="text-indigo-800">Rational Agent:</strong> An agent that performs the action sequence that is expected to maximize its performance given its goals, based only on its sensor data and its knowledge base. (The practical design goal)
+            </p>
+        </div>
+
+        <!-- Quiz Section -->
+        <section class="space-y-4" id="quiz-container">
+            <!-- Properties to classify -->
+        </section>
+
+        <!-- Feedback and Control -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <button id="check-answers" 
+                    class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.02]">
+                Check Answers
+            </button>
+            <button id="reset-quiz" 
+                    class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 transition duration-150 transform hover:scale-[1.02]">
+                Reset Quiz
+            </button>
+        </div>
+
+        <!-- Result Display -->
+        <div id="results" class="mt-6 p-4 bg-white border-2 border-dashed border-indigo-200 rounded-lg text-center hidden">
+            <p class="text-xl font-bold text-indigo-800" id="score-text">Results will appear here.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Data Definitions ---
+        const properties = [
+            // Core Definitional Questions
+            { text: "Its actions are aimed at maximizing a predefined performance measure.", correct: "Rational Agent" },
+            { text: "It requires a complete, up-to-date **knowledge base** to inform its decisions.", correct: "Rational Agent" },
+            { text: "It merely acts on the environment; it does not explicitly optimize its actions based on expected outcome.", correct: "Intelligent Agent" },
+            { text: "This is the **practical design objective** in AI and robotics.", correct: "Rational Agent" },
+            { text: "This definition applies to any system with sensors, effectors, and a goal.", correct: "Intelligent Agent" },
+            
+            // New Practical Case Studies
+            { text: "Case: A stock trading program uses real-time market data to predict future stock value and executes a trade expected to yield the highest profit based on that prediction.", correct: "Rational Agent" },
+            { text: "Case: A simple thermostat senses the temperature (sensor) and turns the AC on (action) when it's hot, but does not anticipate future temperature drops or learn user preferences to save energy.", correct: "Intelligent Agent" },
+            { text: "Case: A robot vacuum dynamically adjusts its cleaning pattern based on sensor readings that detect dustier areas and prioritizes its path to maximize cleaning before the battery dies.", correct: "Rational Agent" },
+        ];
+
+        const agentTypes = ["Intelligent Agent", "Rational Agent"];
+
+        // --- Core Functions ---
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createDropdown(id, options, placeholderText, disabled) {
+            const select = document.createElement('select');
+            select.id = id;
+            select.disabled = disabled;
+            select.className = 'w-full p-2 border border-gray-300 rounded-lg text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500 transition duration-100';
+
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = "";
+            placeholderOption.textContent = placeholderText;
+            placeholderOption.selected = true;
+            placeholderOption.disabled = true;
+            select.appendChild(placeholderOption);
+
+            options.forEach(optionText => {
+                const option = document.createElement('option');
+                option.value = optionText;
+                option.textContent = optionText;
+                select.appendChild(option);
+            });
+            return select;
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            // Shuffle properties for different quiz order each time
+            shuffleArray(properties);
+
+            properties.forEach((prop, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.id = `q-${index}`;
+                itemDiv.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border-b border-gray-200 items-center bg-white hover:bg-gray-50 transition duration-100 rounded-lg';
+
+                // 1. Property Description
+                const propLabel = document.createElement('div');
+                propLabel.className = 'sm:col-span-2 text-base text-gray-700';
+                propLabel.textContent = prop.text;
+                itemDiv.appendChild(propLabel);
+
+                // 2. Agent Type Dropdown & Feedback
+                const selectContainer = document.createElement('div');
+                selectContainer.className = 'flex items-center space-x-2';
+                
+                const select = createDropdown(`select-${index}`, agentTypes, "-- Select Agent Type --", false);
+                
+                const feedbackSpan = document.createElement('span');
+                feedbackSpan.id = `feedback-${index}`;
+                feedbackSpan.className = 'text-2xl font-bold hidden w-6';
+
+                selectContainer.appendChild(select);
+                selectContainer.appendChild(feedbackSpan);
+                itemDiv.appendChild(selectContainer);
+
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function checkAnswers() {
+            let correctCount = 0;
+            const totalQuestions = properties.length;
+            let allAnswersSelected = true;
+
+            properties.forEach((prop, index) => {
+                const select = document.getElementById(`select-${index}`);
+                const feedback = document.getElementById(`feedback-${index}`);
+                const itemDiv = document.getElementById(`q-${index}`);
+
+                const userAnswer = select.value;
+                const correctAnswer = prop.correct;
+                
+                itemDiv.classList.remove('bg-green-50', 'bg-red-50');
+
+                if (userAnswer === "") {
+                    allAnswersSelected = false;
+                    return;
+                }
+
+                select.disabled = true;
+                
+                feedback.classList.remove('hidden', 'text-green-600', 'text-red-600');
+                
+                if (userAnswer === correctAnswer) {
+                    correctCount++;
+                    feedback.textContent = '✓';
+                    feedback.classList.add('text-green-600');
+                    itemDiv.classList.add('bg-green-50');
+                } else {
+                    feedback.textContent = '✕';
+                    feedback.classList.add('text-red-600');
+                    itemDiv.classList.add('bg-red-50');
+                }
+            });
+
+            if (!allAnswersSelected) {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.classList.remove('hidden');
+                document.getElementById('score-text').textContent = "Please select an agent type for every property before checking.";
+                resultsDiv.classList.add('border-red-500');
+                document.getElementById('check-answers').disabled = false;
+                document.querySelectorAll('select').forEach(s => s.disabled = false);
+            } else {
+                displayResults(correctCount, totalQuestions);
+            }
+        }
+
+        function displayResults(correctCount, totalCount) {
+            const resultsDiv = document.getElementById('results');
+            const scoreText = document.getElementById('score-text');
+            
+            const percentage = Math.round((correctCount / totalCount) * 100);
+            
+            scoreText.textContent = `Score: ${correctCount} / ${totalCount} (${percentage}%)`;
+
+            resultsDiv.classList.remove('border-indigo-200', 'border-green-500', 'border-red-500');
+
+            if (percentage === 100) {
+                resultsDiv.classList.add('border-green-500');
+                scoreText.textContent += " — Perfect! You clearly understand the nuance.";
+            } else {
+                resultsDiv.classList.add('border-red-500');
+                scoreText.textContent += " — Review the definitions to distinguish the general intelligent agent from the optimized rational agent.";
+            }
+
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function resetQuiz() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.classList.add('hidden');
+            
+            document.querySelectorAll('#quiz-container > div').forEach(q => {
+                q.classList.remove('bg-green-50', 'bg-red-50');
+            });
+
+            renderQuiz();
+            
+            document.querySelectorAll('[id^="feedback-"]').forEach(span => span.classList.add('hidden'));
+            document.getElementById('check-answers').disabled = false;
+        }
+
+        // --- Event Listeners and Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuiz();
+            document.getElementById('check-answers').addEventListener('click', checkAnswers);
+            document.getElementById('reset-quiz').addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
