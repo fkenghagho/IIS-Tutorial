@@ -7,7 +7,7 @@ ENV ROS_WS=${HOME}/workspace/ros
 #============= Install extra software packages =============#
 # Examples:
 
-# USER root
+ USER root
  RUN apt update && apt install -y curl
  RUN pip install numpy
  RUN pip install matplotlib
