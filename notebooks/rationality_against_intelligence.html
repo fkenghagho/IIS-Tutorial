@@ -15,15 +15,6 @@
             <p class="text-gray-600 mt-2">Test your understanding of the core definitions and practical cases.</p>
         </header>
 
-        <!-- Definitions Section -->
-        <div class="space-y-4 mb-8 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
-            <p class="text-sm">
-                <strong class="text-indigo-800">Intelligent Agent:</strong> A system that senses the environment and acts upon it towards the achievement of a goal. (The broad definition)
-            </p>
-            <p class="text-sm">
-                <strong class="text-indigo-800">Rational Agent:</strong> An agent that performs the action sequence that is expected to maximize its performance given its goals, based only on its sensor data and its knowledge base. (The practical design goal)
-            </p>
-        </div>
 
         <!-- Quiz Section -->
         <section class="space-y-4" id="quiz-container">
@@ -52,10 +43,12 @@
         // --- Data Definitions ---
         const properties = [
             // Core Definitional Questions
+            { text: "A system that senses the environment and acts upon it towards the achievement of a goal.", correct: "Intelligent Agent" },
+            { text: "An agent that performs the action sequence that is expected to maximize its performance given its goals, based only on its sensor data and its knowledge base.", correct: "Rational Agent" },
             { text: "Its actions are aimed at maximizing a predefined performance measure.", correct: "Rational Agent" },
-            { text: "It requires a complete, up-to-date **knowledge base** to inform its decisions.", correct: "Rational Agent" },
+            { text: "It is bound to an incomplete, up-to-date knowledge base to inform its decisions.", correct: "Rational Agent" },
             { text: "It merely acts on the environment; it does not explicitly optimize its actions based on expected outcome.", correct: "Intelligent Agent" },
-            { text: "This is the **practical design objective** in AI and robotics.", correct: "Rational Agent" },
+            { text: "This is the practical design objective in AI and robotics.", correct: "Rational Agent" },
             { text: "This definition applies to any system with sensors, effectors, and a goal.", correct: "Intelligent Agent" },
             
             // New Practical Case Studies
