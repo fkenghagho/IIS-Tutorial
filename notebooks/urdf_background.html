@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise 2: URDF Background</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic placeholders and font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc; /* Light gray background */
+        }
+        
+        /* Ensures whitespace (including indentation) is preserved */
+        .code-container {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.4;
+        }
+        /* Styling for XML/Xacro Tags */
+        .tag-name {
+            color: #569cd6; /* Light Blue */
+            font-weight: bold;
+        }
+        /* Styling for XML/Xacro Attributes */
+        .attribute-name {
+            color: #9cd656; /* Green */
+        }
+        /* Styling for Parameter Variables */
+        .parameter-variable {
+            color: #d69c56; /* Orange */
+            font-weight: 600;
+        }
+        /* Styling for Comments */
+        .comment {
+            color: #6a9955; /* Darker Green */
+        }
+        /* General content within tags (e.g., attribute values) */
+        .attr-value {
+            color: #ce9178; /* Light Brown */
+        }
+        
+        .placeholder-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #e2e8f0; /* Gray-200 */
+            border: 2px dashed #94a3b8; /* Slate-400 */
+            color: #475569; /* Slate-600 */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-weight: 600;
+        }
+        /* Style for the 'bold' effect using the <br> tag in the text */
+        .text-bold-line {
+            font-weight: 700;
+            display: inline;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10">
+        <p class="text-gray-600 mb-8 italic">
+            A succinct review of the Unified Robot Description Format for environmental modeling.
+        </p>
+
+        <!-- What is URDF? -->
+        <h2 class="text-2xl font-bold text-gray-800 mt-6 mb-3">
+            What is URDF?
+        </h2>
+        <p class="text-gray-700 mb-4">
+           <span class="text-bold-line">URDF</span> (Unified Robot Description Format) was designed to describe a robot's physical structure (<span class="text-bold-line">links</span>) and connections (<span class="text-bold-line">joints</span>). URDF can be regarded as the mathematical model of the robot body as it provide information about the physical geometry, appearance, kinematics, dynamics, and statics. Once written, the URDF file can be loaded in sumalors such as RViz, Gazebo, Mujoco, Unreal Engine, PyBullet. It is essential in the design phase (model validation), development phase (part of program), and execution phase (verification and debugging).
+        </p>
+
+        <!-- Video Placeholder -->
+        <div class="placeholder-box w-full aspect-video bg-gray-200 rounded-lg overflow-hidden border border-gray-400">
+        
+           <video width="100%%" height="300" autoplay loop muted controls>
+                  <source src="https://nc.uni-bremen.de/public.php/dav/files/ooTHFe9B4XGgFKP/?accept=zip" type="video/mp4">
+                  Your browser does not support the video tag.
+          </video>
+    </div>
+
+        <h2 class="text-2xl font-bold text-gray-800 mt-6 mb-3">
+            Links and Joints in URDF
+        </h2>
+
+        <!-- Links Section -->
+        <div class="mb-6 border-l-4 border-yellow-500 pl-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                Links (Physical Objects)
+            </h3>
+            <p class="text-gray-700 mb-2">
+                A <span class="text-bold-line">Link</span> represents a physical object in the environment (e.g., a box, furniture). It is defined by parameters critical for physics-based simulations (e.g., Gazebo):
+            </p>
+            <ul class="list-disc list-inside space-y-1 ml-4 text-gray-700">
+                <li><span class="text-bold-line">Visual Parameter:</span> Defines the link's <span class="text-bold-line">appearance</span> and  <span class="text-bold-line">shape</span>.</li>
+                <li><span class="text-bold-line">Collision Parameter:</span> Defines the simplified shape used for <span class="text-bold-line">collision detection</span> (to reduce computational load).</li>
+                <li><span class="text-bold-line">Inertial Parameter:</span> Defines how the link <span class="text-bold-line">behaves under physical forces</span> (mass, inertia).</li>
+            </ul>
+             <hr style="
+        height: 20px; 
+        border: none; 
+        background-color: transparent; 
+        margin: 0; 
+        padding: 0;
+    ">
+            <img width=50px
+                         height= 20px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/link.png" 
+                         alt="Illustration of a link's description in." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-white-500">
+        </div>
+
+        <!-- Joints Section -->
+        <div class="mb-6 border-l-4 border-green-500 pl-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                Joints (Connections and Motion)
+            </h3>
+            <p class="text-gray-700 mb-2">
+                <span class="text-bold-line">Joints</span> connect links and define their movement relative to each other. For environmental models, two types are fundamental for dynamic objects:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="p-4 bg-green-50 rounded-lg shadow-sm">
+                    <p class="font-bold text-lg text-green-700">Revolute Joints</p>
+                    <p class="text-sm text-gray-600 mb-3">Allow for <span class="text-bold-line">rotary motion</span> (e.g., a door hinge allowing a fridge door to swing open). Defined by type, axis, and motion limits.</p>
+                    <!-- Revolute Joint Image Placeholder -->
+                    <div >
+                        <p><img width=50px
+                         height= 20px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/revolute-joint.jpg" 
+                         alt="Illustration of a link's description in." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-white-500">
+                        </p>
+                    </div>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg shadow-sm">
+                    <p class="font-bold text-lg text-green-700">Prismatic Joints</p>
+                    <p class="text-sm text-gray-600 mb-3">Perform <span class="text-bold-line">linear motion</span> (e.g., a drawer sliding in and out of a cabinet). Defined by type, axis, and motion limits.</p>
+                    <!-- Prismatic Joint Image Placeholder -->
+                    <div>
+                        <p><img width=50px
+                         height= 20px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/prismatic-joint.jpg" 
+                         alt="Illustration of a link's description in." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-white-500">
+                       </p>
+                    </div>
+                </div>
+            </div>
+            <p >
+            <hr style="
+        height: 20px; 
+        border: none; 
+        background-color: transparent; 
+        margin: 0; 
+        padding: 0;
+    ">
+                A <span class="text-bold-line">joint</span> connects a parent to a child link and requires parameters for type, axis, and limits (for prismatic/revolute types) to define the specific range of motion:
+                
+                <ul class="list-disc list-inside space-y-1 ml-4 text-gray-700">
+                <li><span class="text-bold-line">Type:</span> defines the type of mechanical constraint and movement. </li>
+                <li><span class="text-bold-line">Axis:</span> a 3D vector (x, y, z) that specifies the direction of movement. </li>
+                <li><span class="text-bold-line">Limits:</span>defines the mechanical constraints (velocity, position range, effort).</li>
+            </ul>
+                
+            </p>
+            <hr style="
+        height: 20px; 
+        border: none; 
+        background-color: transparent; 
+        margin: 0; 
+        padding: 0;
+    ">
+            <img width=50px
+                         height= 20px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/joint2.png" 
+                         alt="Illustration of a link's description in." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-white-500">
+        </div>
+        
+        
+        <!-- Composing URDF -->
+        <div class="mb-6 border-l-4 border-black-500 pl-4">
+<h3 class="text-xl font-semibold text-gray-800 mb-2">
+Generalization (Include and Parameters)
+</h3>
+<p class="text-gray-700 leading-relaxed">
+For complex robots, the Universal Robot Description Format (URDF) leverages concepts of modularity and parameterization to achieve high readability, reusability, and configurability. Instead of creating a single, monolithic file for the entire system, the robot is built by defining its components (such as individual links, joints, a gripper, or a mobile base) in separate URDF or Xacro files.
+</p>
+<p class="text-gray-700 leading-relaxed mt-3">
+These separate definitions are then brought together using an include mechanism in a top-level URDF file. This composition allows developers to maintain and update sub-assemblies independently. For example, a standard wheel module can be included multiple times, greatly simplifying the definition of a four-wheeled base.
+</p>
+<p class="text-gray-700 leading-relaxed mt-3">
+The key to true reusability lies in parameterization. Instead of hardcoding dimensions, masses, or joint limits, these values are treated as variables. The syntax <code>${param_name}</code> is used throughout the component files to reference these external values. When the top-level URDF file includes a sub-assembly, it can pass specific values to these parameters, allowing a single component file to describe many variations of the same part (e.g., a "motor_unit" with different torque limits based on the passed-in parameter). This capability makes the robot model highly flexible and scalable.
+</p>
+
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">URDF/Xacro Modular Robot Code</h1>
+    <p class="text-lg text-gray-600 mb-8">
+        This is the consolidated XACRO structure for your robot, including the main file and the externally defined base macro. Note the inclusion of the external macro and the parameterized calls.
+    </p>
+
+    <div class="bg-gray-900 shadow-2xl rounded-lg p-6">
+        <h2 class="text-xl font-semibold text-white mb-4 border-b border-gray-700 pb-2">File 1: main_robot.xacro (Main Assembly)</h2>
+        <pre class="code-container text-sm text-gray-300">
+<span class="tag-name">&lt;?xml</span> <span class="attribute-name">version</span>=<span class="attr-value">"1.0"</span><span class="tag-name">?&gt;</span>
+<span class="tag-name">&lt;robot</span> <span class="attribute-name">name</span>=<span class="attr-value">"red_cylinder_robot_arm"</span> <span class="attribute-name">xmlns:xacro</span>=<span class="attr-value">"http://www.ros.org/wiki/xacro"</span><span class="tag-name">&gt;</span>
+
+  <span class="tag-name">&lt;xacro:include</span> <span class="attribute-name">filename</span>=<span class="attr-value">"base_macros.xacro"</span> <span class="tag-name">/&gt;</span> <span class="comment">&lt;!-- External Base Macro Included --&gt;</span>
+
+  <span class="tag-name">&lt;xacro:macro</span> <span class="attribute-name">name</span>=<span class="attr-value">"cylinder_link"</span> <span class="attribute-name">params</span>=<span class="attr-value">"link_name color_name rgba_value radius length mass_value"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;link</span> <span class="attribute-name">name</span>=<span class="attr-value">"${link_name}"</span><span class="tag-name">&gt;</span>
+      <span class="tag-name">&lt;inertial&gt;</span>
+        <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;mass</span> <span class="attribute-name">value</span>=<span class="attr-value">"${mass_value}"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;inertia</span> 
+          <span class="attribute-name">ixx</span>=<span class="attr-value">"${(mass_value/12.0) * (3*radius*radius + length*length)}"</span> 
+          <span class="attribute-name">ixy</span>=<span class="attr-value">"0.0"</span> <span class="attribute-name">ixz</span>=<span class="attr-value">"0.0"</span>
+          <span class="attribute-name">iyy</span>=<span class="attr-value">"${(mass_value/12.0) * (3*radius*radius + length*length)}"</span> 
+          <span class="attribute-name">iyz</span>=<span class="attr-value">"0.0"</span>
+          <span class="attribute-name">izz</span>=<span class="attr-value">"${(mass_value/2.0) * (radius*radius)}"</span>
+        <span class="tag-name">/&gt;</span>
+      <span class="tag-name">&lt;/inertial&gt;</span>
+      <span class="tag-name">&lt;visual&gt;</span>
+        <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;geometry&gt;&lt;cylinder</span> <span class="attribute-name">radius</span>=<span class="attr-value">"${radius}"</span> <span class="attribute-name">length</span>=<span class="attr-value">"${length}"</span><span class="tag-name">/&gt;&lt;/geometry&gt;</span>
+        <span class="tag-name">&lt;material</span> <span class="attribute-name">name</span>=<span class="attr-value">"${color_name}"</span><span class="tag-name">&gt;&lt;color</span> <span class="attribute-name">rgba</span>=<span class="attr-value">"${rgba_value}"</span><span class="tag-name">/&gt;&lt;/material&gt;</span>
+      <span class="tag-name">&lt;/visual&gt;</span>
+      <span class="tag-name">&lt;collision&gt;</span>
+        <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;geometry&gt;&lt;cylinder</span> <span class="attribute-name">radius</span>=<span class="attr-value">"${radius}"</span> <span class="attribute-name">length</span>=<span class="attr-value">"${length}"</span><span class="tag-name">/&gt;&lt;/geometry&gt;</span>
+      <span class="tag-name">&lt;/collision&gt;</span>
+    <span class="tag-name">&lt;/link&gt;</span>
+  <span class="tag-name">&lt;/xacro:macro&gt;</span>
+
+  <span class="tag-name">&lt;xacro:base_link_macro</span> 
+    <span class="attribute-name">link_name</span>=<span class="attr-value">"base_link"</span> 
+    <span class="attribute-name">size_x</span>=<span class="attr-value">"0.2"</span> <span class="attribute-name">size_y</span>=<span class="attr-value">"0.2"</span> <span class="attribute-name">size_z</span>=<span class="attr-value">"0.02"</span> 
+    <span class="attribute-name">mass_value</span>=<span class="attr-value">"2.0"</span> 
+    <span class="attribute-name">xyz_origin</span>=<span class="attr-value">"0 0 0.01"</span>
+  <span class="tag-name">/&gt;</span>
+
+  <span class="tag-name">&lt;link</span> <span class="attribute-name">name</span>=<span class="attr-value">"slider_link"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;inertial&gt;</span>
+      <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0.1 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+      <span class="tag-name">&lt;mass</span> <span class="attribute-name">value</span>=<span class="attr-value">"0.5"</span><span class="tag-name">/&gt;</span>
+      <span class="tag-name">&lt;inertia</span> <span class="attribute-name">ixx</span>=<span class="attr-value">"0.005"</span> <span class="attribute-name">ixy</span>=<span class="attr-value">"0.0"</span> <span class="attribute-name">ixz</span>=<span class="attr-value">"0.0"</span> <span class="attribute-name">iyy</span>=<span class="attr-value">"0.005"</span> <span class="attribute-name">iyz</span>=<span class="attr-value">"0.0"</span> <span class="attribute-name">izz</span>=<span class="attr-value">"0.001"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;/inertial&gt;</span>
+    <span class="tag-name">&lt;visual&gt;</span>
+      <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0.1 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+      <span class="tag-name">&lt;geometry&gt;&lt;box</span> <span class="attribute-name">size</span>=<span class="attr-value">"0.2 0.05 0.05"</span><span class="tag-name">/&gt;&lt;/geometry&gt;</span>
+      <span class="tag-name">&lt;material</span> <span class="attribute-name">name</span>=<span class="attr-value">"blue"</span><span class="tag-name">&gt;&lt;color</span> <span class="attribute-name">rgba</span>=<span class="attr-value">"0.0 0.0 0.8 1.0"</span><span class="tag-name">/&gt;&lt;/material&gt;</span>
+    <span class="tag-name">&lt;/visual&gt;</span>
+    <span class="tag-name">&lt;collision&gt;&lt;geometry&gt;&lt;box</span> <span class="attribute-name">size</span>=<span class="attr-value">"0.2 0.05 0.05"</span><span class="tag-name">/&gt;&lt;/geometry&gt;&lt;/collision&gt;</span>
+  <span class="tag-name">&lt;/link&gt;</span>
+
+  <span class="tag-name">&lt;xacro:cylinder_link</span>
+    <span class="attribute-name">link_name</span>=<span class="attr-value">"red_cylinder_link"</span> 
+    <span class="attribute-name">color_name</span>=<span class="attr-value">"red"</span> 
+    <span class="attribute-name">rgba_value</span>=<span class="attr-value">"1.0 0.0 0.0 1.0"</span> 
+    <span class="attribute-name">radius</span>=<span class="attr-value">"0.05"</span> 
+    <span class="attribute-name">length</span>=<span class="attr-value">"0.2"</span> 
+    <span class="attribute-name">mass_value</span>=<span class="attr-value">"0.5"</span>
+  <span class="tag-name">/&gt;</span>
+
+  <span class="tag-name">&lt;link</span> <span class="attribute-name">name</span>=<span class="attr-value">"world"</span><span class="tag-name">/&gt;</span>
+  
+  <span class="tag-name">&lt;joint</span> <span class="attribute-name">name</span>=<span class="attr-value">"world_to_base_joint"</span> <span class="attribute-name">type</span>=<span class="attr-value">"fixed"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;parent</span> <span class="attribute-name">link</span>=<span class="attr-value">"world"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;child</span> <span class="attribute-name">link</span>=<span class="attr-value">"base_link"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0.01"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+  <span class="tag-name">&lt;/joint&gt;</span>
+  
+  <span class="tag-name">&lt;joint</span> <span class="attribute-name">name</span>=<span class="attr-value">"prismatic_slider_joint"</span> <span class="attribute-name">type</span>=<span class="attr-value">"prismatic"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;parent</span> <span class="attribute-name">link</span>=<span class="attr-value">"base_link"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;child</span> <span class="attribute-name">link</span>=<span class="attr-value">"slider_link"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0.01"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span> 
+    <span class="tag-name">&lt;axis</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"1 0 0"</span><span class="tag-name">/&gt;</span> <span class="tag-name">&lt;limit</span> <span class="attribute-name">effort</span>=<span class="attr-value">"100.0"</span> <span class="attribute-name">velocity</span>=<span class="attr-value">"0.5"</span> <span class="attribute-name">lower</span>=<span class="attr-value">"-0.1"</span> <span class="attribute-name">upper</span>=<span class="attr-value">"0.2"</span><span class="tag-name">/&gt;</span> 
+  <span class="tag-name">&lt;/joint&gt;</span>
+
+  <span class="tag-name">&lt;joint</span> <span class="attribute-name">name</span>=<span class="attr-value">"revolute_cylinder_joint"</span> <span class="attribute-name">type</span>=<span class="attr-value">"revolute"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;parent</span> <span class="attribute-name">link</span>=<span class="attr-value">"slider_link"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;child</span> <span class="attribute-name">link</span>=<span class="attr-value">"red_cylinder_link"</span><span class="tag-name">/&gt;</span>
+    <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0.2 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span> 
+    <span class="tag-name">&lt;axis</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"1 0 0"</span><span class="tag-name">/&gt;</span> <span class="tag-name">&lt;limit</span> <span class="attribute-name">effort</span>=<span class="attr-value">"100.0"</span> <span class="attribute-name">velocity</span>=<span class="attr-value">"0.5"</span> <span class="attribute-name">lower</span>=<span class="attr-value">"-3.57"</span> <span class="attribute-name">upper</span>=<span class="attr-value">"3.57"</span><span class="tag-name">/&gt;</span> 
+  <span class="tag-name">&lt;/joint&gt;</span>
+
+<span class="tag-name">&lt;/robot&gt;</span></pre>
+    </div>
+
+    <div class="bg-gray-900 shadow-2xl rounded-lg p-6 mt-8">
+        <h2 class="text-xl font-semibold text-white mb-4 border-b border-gray-700 pb-2">File 2: base_macros.xacro (External Definition)</h2>
+        <pre class="code-container text-sm text-gray-300">
+<span class="tag-name">&lt;?xml</span> <span class="attribute-name">version</span>=<span class="attr-value">"1.0"</span><span class="tag-name">?&gt;</span>
+<span class="tag-name">&lt;robot</span> <span class="attribute-name">xmlns:xacro</span>=<span class="attr-value">"http://www.ros.org/wiki/xacro"</span><span class="tag-name">&gt;</span>
+
+  <span class="tag-name">&lt;xacro:macro</span> <span class="attribute-name">name</span>=<span class="attr-value">"base_link_macro"</span> <span class="attribute-name">params</span>=<span class="attr-value">"link_name size_x size_y size_z mass_value xyz_origin"</span><span class="tag-name">&gt;</span>
+    <span class="tag-name">&lt;link</span> <span class="attribute-name">name</span>=<span class="attr-value">"${link_name}"</span><span class="tag-name">&gt;</span>
+      <span class="tag-name">&lt;inertial&gt;</span>
+        <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"${xyz_origin}"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span> 
+        <span class="tag-name">&lt;mass</span> <span class="attribute-name">value</span>=<span class="attr-value">"${mass_value}"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;inertia</span> 
+          <span class="attribute-name">ixx</span>=<span class="attr-value">"${(mass_value/12.0) * (size_y*size_y + size_z*size_z)}"</span> 
+          <span class="attribute-name">ixy</span>=<span class="attr-value">"0.0"</span> <span class="attribute-name">ixz</span>=<span class="attr-value">"0.0"</span>
+          <span class="attribute-name">iyy</span>=<span class="attr-value">"${(mass_value/12.0) * (size_x*size_x + size_z*size_z)}"</span> 
+          <span class="attribute-name">iyz</span>=<span class="attr-value">"0.0"</span>
+          <span class="attribute-name">izz</span>=<span class="attr-value">"${(mass_value/12.0) * (size_x*size_x + size_y*size_y)}"</span>
+        <span class="tag-name">/&gt;</span>
+      <span class="tag-name">&lt;/inertial&gt;</span>
+      <span class="tag-name">&lt;visual&gt;</span>
+        <span class="tag-name">&lt;origin</span> <span class="attribute-name">xyz</span>=<span class="attr-value">"0 0 0"</span> <span class="attribute-name">rpy</span>=<span class="attr-value">"0 0 0"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;geometry&gt;&lt;box</span> <span class="attribute-name">size</span>=<span class="attr-value">"${size_x} ${size_y} ${size_z}"</span><span class="tag-name">/&gt;&lt;/geometry&gt;</span>
+        <span class="tag-name">&lt;material</span> <span class="attribute-name">name</span>=<span class="attr-value">"grey"</span><span class="tag-name">&gt;</span>
+          <span class="tag-name">&lt;color</span> <span class="attribute-name">rgba</span>=<span class="attr-value">"0.5 0.5 0.5 1.0"</span><span class="tag-name">/&gt;</span>
+        <span class="tag-name">&lt;/material&gt;</span>
+      <span class="tag-name">&lt;/visual&gt;</span>
+      <span class="tag-name">&lt;collision&gt;</span>
+        <span class="tag-name">&lt;geometry&gt;&lt;box</span> <span class="attribute-name">size</span>=<span class="attr-value">"${size_x} ${size_y} ${size_z}"</span><span class="tag-name">/&gt;&lt;/geometry&gt;</span>
+      <span class="tag-name">&lt;/collision&gt;</span>
+    <span class="tag-name">&lt;/link&gt;</span>
+  <span class="tag-name">&lt;/xacro:macro&gt;</span>
+
+<span class="tag-name">&lt;/robot&gt;</span></pre>
+    </div>
+
+    <style>
+      .tag-name { color: #f92672; } /* Magenta/Pink for tags like <link> or <xacro:macro> */
+      .attribute-name { color: #a6e22e; } /* Green for attributes like name or params */
+      .attr-value { color: #e6db74; } /* Yellow for attribute values (the strings) */
+      .comment { color: #75715e; font-style: italic; } /* Gray for comments */
+      .code-container {
+        white-space: pre-wrap; /* Ensures line wrapping in the code block */
+        word-break: break-all;
+      }
+    </style>
+</div>
+        <div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+               Robot Design (A Function of Goals)
+            </h3>
+        
+              <hr style="
+        height: 20px; 
+        border: none; 
+        background-color: transparent; 
+        margin: 0; 
+        padding: 0;
+    ">
+            <img width=50px
+                         height= 20px
+                         src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/img/tool.jpg" 
+                         alt="Illustration of a link's description in." 
+                         class="w-full h-auto rounded-xl shadow-lg border-4 border-white-500">
+        </div>
+
+    </div>
+
+</body>
+</html>

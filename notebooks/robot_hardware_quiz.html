@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and a smooth appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .quiz-card {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        /* Style for the explanation container transitions */
+        .explanation {
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            padding-top: 0;
+        }
+        .explanation.visible {
+            max-height: 300px; /* Sufficient height for explanations */
+            opacity: 1;
+            padding-top: 0.5rem;
+        }
+        /* Styles for correct/incorrect borders on selection */
+        select.correct {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 1px #10b981;
+        }
+        select.incorrect {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'robot-blue': '#1c4d96',
+                        'robot-green': '#10b981',
+                        'robot-red': '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div id="app" class="min-h-screen p-4 sm:p-8 flex justify-center items-start">
+    <div class="w-full max-w-4xl bg-white p-6 sm:p-10 rounded-xl quiz-card mt-8">
+        <p class="text-lg text-gray-600 mb-8">Test your foundational knowledge. You must answer all 25 questions before checking your results. Once checked, you must reset the quiz to try again.</p>
+
+        <div id="quiz-container">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <button 
+            id="action-button" 
+            onclick="handleAction()"
+            class="w-full mt-8 px-6 py-3 bg-robot-blue text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-robot-blue/50 disabled-button"
+            disabled
+        >
+            Check Answers (0/25 Completed)
+        </button>
+        
+        <div id="status-message" class="mt-4 text-center text-red-500 font-medium hidden">
+            Please answer all 25 questions before checking your results.
+        </div>
+
+        <div id="results" class="mt-8 pt-6 border-t border-gray-200 hidden">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Your Results:</h2>
+            <p id="score-display" class="text-xl font-bold text-gray-800">Score: 0 / 25</p>
+            <p id="feedback-message" class="mt-2 text-lg"></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const QUIZ_LENGTH = 25;
+    let quizChecked = false; // State to track if the quiz has been checked
+
+    // Define the quiz data structure with 25 questions (same as previous)
+    const quizData = [
+        { id: 1, concept: "Robot Definition", question: "According to the fundamental definition, a robot is an electro-mechanical device composed of links, joints, and what essential component that enables movement?", options: [{ text: "Sensors", isCorrect: false }, { text: "Actuators", isCorrect: true }, { text: "Head", isCorrect: false }, { text: "Computer Vision System", isCorrect: false }], explanation: "Actuators (motors) are essential as they exert forces to move neighboring links relative to each other." },
+        { id: 2, concept: "Robot Structure: Links", question: "In robotic mechanisms, what are the rigid body segments (like the forearm or chassis) that are connected by joints called?", options: [{ text: "Effectors", isCorrect: false }, { text: "Links", isCorrect: true }, { text: "Chains", isCorrect: false }, { text: "DoFs", isCorrect: false }], explanation: "A **Link** is a rigid body that forms the structural segment connecting two joints in the robot's kinematic chain." },
+        { id: 3, concept: "Robot Parts: Grippers", question: "The part of the robot that performs the physical task at the end of the manipulator arm (e.g., grasping, welding, painting) is generally known as the:", options: [{ text: "Torso", isCorrect: false }, { text: "Base", isCorrect: false }, { text: "End-Effector (Gripper/Tool)", isCorrect: true }, { text: "Arm Link 1", isCorrect: false }], explanation: "The **End-Effector** (often a gripper or a specialized tool) is the terminal device that interacts with the environment to execute the task." },
+        { id: 4, concept: "Actuators vs Effectors", question: "What is the primary function of an **Actuator** in a robot system?", options: [{ text: "To sense the environment's distance", isCorrect: false }, { text: "To perform the final work on the task", isCorrect: false }, { text: "To convert electrical, pneumatic, or hydraulic energy into mechanical motion or force", isCorrect: true }, { text: "To calculate the Inverse Kinematics", isCorrect: false }], explanation: "The **Actuator** is the component responsible for generating the motion by converting stored energy into a useful mechanical output (force or torque)." },
+        { id: 5, concept: "Actuation Mechanism: DC Brushed", question: "What is the primary disadvantage of using a **DC Brushed Motor** in a robot, compared to a Brushless DC Motor?", options: [{ text: "Lower maximum speed", isCorrect: false }, { text: "Requirement for electronic controller", isCorrect: false }, { text: "Wear and maintenance due to physical brushes and commutator", isCorrect: true }, { text: "Inability to run on battery power", isCorrect: false }], explanation: "Physical brushes contacting the commutator lead to mechanical wear, sparking, and require periodic maintenance." },
+        { id: 6, concept: "Actuation Mechanism: Brushless", question: "**Brushless DC Motors (BLDC)** are highly efficient and reliable because they replace mechanical commutation with:", options: [{ text: "Hydraulic pressure valves", isCorrect: false }, { text: "Pneumatic pistons", isCorrect: false }, { text: "Magnetic gears", isCorrect: false }, { text: "Electronic commutation (sensor-based or sensorless)", isCorrect: true }], explanation: "BLDCs use electronic controllers to switch the current in the stator coils, eliminating the need for physical brushes." },
+        { id: 7, concept: "Actuation Mechanism: Stepper", question: "Which motor type is best suited for precise, open-loop position control due to its ability to rotate in discrete, fixed angular increments?", options: [{ text: "Hydraulic Motor", isCorrect: false }, { text: "DC Brushed Motor", isCorrect: false }, { text: "Stepper Motor", isCorrect: true }, { text: "Servo Motor (without a gearbox)", isCorrect: false }], explanation: "A **Stepper Motor** moves in 'steps,' allowing a microcontroller to track its position accurately without an encoder, provided the motor doesn't skip steps (open-loop control)." },
+        { id: 8, concept: "Joint Type: Revolute", question: "A **Revolute (R) Joint** adds how many degrees of freedom (DoF) to the robot, and what kind of motion does it permit?", options: [{ text: "One translational DoF", isCorrect: false }, { text: "Two rotational DoF", isCorrect: false }, { text: "One rotational DoF (pivoting)", isCorrect: true }, { text: "Three translational DoF", isCorrect: false }], explanation: "A **Revolute Joint** allows the connected links to pivot relative to each other, granting one rotational degree of freedom." },
+        { id: 9, concept: "Joint Type: Prismatic", question: "What is the primary type of motion provided by a **Prismatic (P) Joint**?", options: [{ text: "Rotation around an axis", isCorrect: false }, { text: "Linear sliding motion along an axis", isCorrect: true }, { text: "Motion on a spherical surface", isCorrect: false }, { text: "Free rotation on three axes", isCorrect: false }], explanation: "A **Prismatic Joint** (also known as a linear joint) allows for pure translational movement (sliding) along a single axis." },
+        { id: 10, concept: "Degrees of Freedom (DoF)", question: "The **Degrees of Freedom (DoF)** of a robot manipulator arm is defined as:", options: [{ text: "The total number of joints (R and P)", isCorrect: false }, { text: "The maximum payload the robot can lift", isCorrect: false }, { text: "The minimum number of independent parameters required to fully specify the robot's configuration", isCorrect: true }, { text: "The dimensions of the robot's Task Space", isCorrect: false }], explanation: "DoF is a fundamental concept representing the minimum set of coordinates needed to describe the robot's state." },
+        { id: 11, concept: "Kinematics Space: Joint Space", question: "Which kinematic space is described by the set of all joint variables (angles and linear displacements) of the robot?", options: [{ text: "Tool Space", isCorrect: false }, { text: "Task Space", isCorrect: false }, { text: "Cartesian Space", isCorrect: false }, { text: "Joint Space", isCorrect: true }], explanation: "**Joint Space** uses the robot's intrinsic variables ($q_1, q_2, \dots$), which are the joint values." },
+        { id: 12, concept: "Kinematics Space: Task Space", question: "The space defined by the position and orientation ($x, y, z$, roll, pitch, yaw) of the End-Effector in the environment is known as the:", options: [{ text: "Configuration Space", isCorrect: false }, { text: "Task Space (Workspace)", isCorrect: true }, { text: "Joint Space", isCorrect: false }, { text: "Kinematic Space", isCorrect: false }], explanation: "The **Task Space** or Workspace is the set of all achievable end-effector positions and orientations." },
+        { id: 13, concept: "Kinematics Space: Configuration Space", question: "What is the **Configuration Space**? (According to the notes)", options: [{ text: "The space occupied by the robot's tool", isCorrect: false }, { text: "A complete specification of the positions of every point of the robot", isCorrect: true }, { text: "The space where the robot plans its path", isCorrect: false }, { text: "The minimum DoF required to reach a target", isCorrect: false }], explanation: "The **Configuration Space** is a complete specification of the position of every point of the robot, often parameterized by the joint variables." },
+        { id: 14, concept: "Kinematics Type: Forward", question: "If you are given the values of all **joint angles** and need to find the **end-effector's pose (position/orientation)**, you would use:", options: [{ text: "Inverse Kinematics (IK)", isCorrect: false }, { text: "Inverse Dynamics", isCorrect: false }, { text: "Forward Kinematics (FK)", isCorrect: true }, { text: "Forward Dynamics", isCorrect: false }], explanation: "**Forward Kinematics (FK)** is the calculation of the end-effector pose from the joint values." },
+        { id: 15, concept: "Kinematics Type: Inverse", question: "Which type of kinematics is used to determine the necessary **joint angles** to achieve a desired **end-effector position and orientation**?", options: [{ text: "Forward Kinematics (FK)", isCorrect: false }, { text: "Inverse Kinematics (IK)", isCorrect: true }, { text: "Task Space Planning", isCorrect: false }, { text: "Trajectory Generation", isCorrect: false }], explanation: "**Inverse Kinematics (IK)** takes the target pose (in Task Space) and computes the required joint variables (in Joint Space)." },
+        { id: 16, concept: "IK Challenges: Multiple Solutions", question: "One of the key challenges of Inverse Kinematics is **redundancy**, meaning a desired end-effector pose can often be achieved by:", options: [{ text: "Only one unique set of joint angles", isCorrect: false }, { text: "Multiple different sets of joint angles", isCorrect: true }, { text: "Changing the robot's link lengths", isCorrect: false }, { text: "Using a differential drive system", isCorrect: false }], explanation: "A highly redundant robot can reach a point with its 'elbow up' or 'elbow down,' resulting in multiple valid solutions to the IK problem." },
+        { id: 17, concept: "Mobile Locomotion: Holonomic", question: "A mobile robot base is considered **Holonomic** if:", options: [{ text: "It must always follow an arc or circle", isCorrect: false }, { text: "Its controllable degrees of freedom are equal to its total degrees of freedom", isCorrect: true }, { text: "It is restricted to two-dimensional movement only", isCorrect: false }, { text: "It uses only a single fixed wheel", isCorrect: false }], explanation: "A **Holonomic** system can move instantaneously in any direction (e.g., sideways or diagonally) without path constraints." },
+        { id: 18, concept: "Mobile Locomotion: Non-Holonomic", question: "A standard car or a robot with only two independently driven fixed wheels (Differential Drive) is considered a **Non-Holonomic** system because its movement is constrained. Which statement describes this constraint?", options: [{ text: "It can only move on a single axis (forward/backward)", isCorrect: false }, { text: "It cannot instantly move purely sideways without turning", isCorrect: true }, { text: "Its speed is limited by the motor's power", isCorrect: false }, { text: "It must be manually steered at all times", isCorrect: false }], explanation: "Non-holonomic constraints, such as the rolling constraint of a standard wheel, mean the robot cannot achieve every possible velocity vector instantaneously." },
+        { id: 19, concept: "Steering: Differential Drive", question: "What is the core principle of **Differential Drive Steering**?", options: [{ text: "All four wheels pivot simultaneously like a car's front axle", isCorrect: false }, { text: "Two wheels on the same axis are independently driven to create turning by varying their speeds", isCorrect: true }, { text: "The robot tilts its center of gravity to change direction", isCorrect: false }, { text: "The robot uses legs to step and change orientation", isCorrect: false }], explanation: "Differential drive relies on independent motor control for two wheels to achieve both straight motion (equal speed) and turning (unequal speed)." },
+        { id: 20, concept: "Steering: Ackerman", question: "**Ackerman Steering** is primarily used in cars. What is its key geometric characteristic?", options: [{ text: "The inner and outer turning wheels follow different radii to avoid scrubbing", isCorrect: true }, { text: "It requires three omniwheels to function properly", isCorrect: false }, { text: "All four wheels must rotate at the same speed at all times", isCorrect: false }, { text: "It allows for 360-degree rotation in place (zero turning radius)", isCorrect: false }], explanation: "Ackerman steering ensures that the axes of the turning wheels intersect at a common point, minimizing tire slippage (scrubbing) during a turn." },
+        { id: 21, concept: "Wheel Type: Omniwheel", question: "The distinct feature of an **Omniwheel** is that it has passive rollers around its circumference, allowing it to:", options: [{ text: "Generate traction perpendicular to the wheel's rotation axis only", isCorrect: false }, { text: "Roll freely perpendicular to the wheel's rotation axis", isCorrect: true }, { text: "Maintain perfect grip on slippery surfaces", isCorrect: false }, { text: "Change its diameter dynamically", isCorrect: false }], explanation: "The passive rollers allow the wheel to slide sideways effortlessly, enabling omnidirectional movement when combined with other omniwheels." },
+        { id: 22, concept: "Wheel Type: Mecanum", question: "The **Mecanum Wheel** differs from the Omniwheel by having rollers angled at 45 degrees. What is the result of this angle?", options: [{ text: "The robot can travel faster than standard wheels", isCorrect: false }, { text: "The wheel generates a thrust force vector angled at 45 degrees to the main wheel axis", isCorrect: true }, { text: "It removes the need for active steering joints", isCorrect: false }, { text: "It provides better climbing ability over obstacles", isCorrect: false }], explanation: "The 45-degree angled rollers translate wheel rotation into both forward/backward and sideways thrust components, enabling true omnidirectional control." },
+        { id: 23, concept: "Tool Space", question: "In a typical industrial robotic arm, the term **Tool Space** most precisely refers to the coordinate frame attached to:", options: [{ text: "The robot's base or torso", isCorrect: false }, { text: "The first joint of the arm", isCorrect: false }, { text: "A specific, functional point on the end-effector (e.g., the tip of a welding gun)", isCorrect: true }, { text: "The center of mass of the entire robot", isCorrect: false }], explanation: "Tool Space is the Task Space coordinate frame defined at the functional point of interest on the tool or gripper." },
+        { id: 24, concept: "Actuation Types: High Force", question: "Which actuation mechanism, though complex, is typically chosen when extremely high force, torque, or power density is required for heavy lifting applications?", options: [{ text: "DC Stepper Motors", isCorrect: false }, { text: "Pneumatic or Hydraulic Actuators", isCorrect: true }, { text: "Micro Servo Motors", isCorrect: false }, { text: "Cable-Driven Actuation", isCorrect: false }], explanation: "**Hydraulic Actuators** offer one of the highest power-to-weight ratios and are essential for large, heavy-duty industrial robots." },
+        { id: 25, concept: "Robot Component: Torso/Base", question: "The main body structure of a humanoid or industrial manipulator that connects the arm(s) to the pelvis or ground is known as the:", options: [{ text: "End-Effector", isCorrect: false }, { text: "Actuator", isCorrect: false }, { text: "Base or Torso", isCorrect: true }, { text: "Link 0", isCorrect: false }], explanation: "The **Torso** (in humanoids) or **Base** (in industrial arms) serves as the foundational, often fixed, structure for the kinematic chain." }
+    ];
+
+    /**
+     * Toggles the state of the main action button based on completion.
+     */
+    function updateButtonState() {
+        const actionButton = document.getElementById('action-button');
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        let answeredCount = 0;
+        selectElements.forEach(select => {
+            if (select.value !== "") {
+                answeredCount++;
+            }
+        });
+
+        if (quizChecked) {
+            actionButton.textContent = "Reset Quiz to Try Again";
+            actionButton.classList.remove('disabled-button', 'bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.classList.add('bg-robot-red', 'hover:bg-red-700');
+            actionButton.disabled = false;
+        } else if (answeredCount === QUIZ_LENGTH) {
+            actionButton.textContent = "Check Answers (25/25 Completed)";
+            actionButton.classList.remove('disabled-button', 'bg-robot-red', 'hover:bg-red-700');
+            actionButton.classList.add('bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.disabled = false;
+            document.getElementById('status-message').classList.add('hidden');
+        } else {
+            actionButton.textContent = `Check Answers (${answeredCount}/${QUIZ_LENGTH} Completed)`;
+            actionButton.classList.remove('bg-robot-red', 'hover:bg-red-700', 'bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.classList.add('disabled-button');
+            actionButton.disabled = true;
+            document.getElementById('status-message').classList.add('hidden');
+        }
+    }
+
+    /**
+     * Toggles between checking answers and resetting the quiz based on the state.
+     */
+    function handleAction() {
+        if (quizChecked) {
+            resetQuiz();
+        } else {
+            checkAnswers();
+        }
+    }
+
+    /**
+     * Checks the student's answers and displays results and feedback.
+     */
+    function checkAnswers() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        // 1. Mandatory: Check if all questions are answered
+        let allAnswered = true;
+        selectElements.forEach(select => {
+            if (select.value === "") {
+                allAnswered = false;
+            }
+            // Disable selections after checking
+            select.disabled = true;
+        });
+
+        if (!allAnswered) {
+            document.getElementById('status-message').classList.remove('hidden');
+            return; 
+        }
+
+        // --- Execute Check ---
+        let score = 0;
+        document.getElementById('results').classList.remove('hidden');
+
+        quizData.forEach(q => {
+            const selectElement = document.getElementById(`q-${q.id}`);
+            const feedbackElement = document.getElementById(`feedback-${q.id}`);
+            const explanationElement = document.getElementById(`explanation-${q.id}`);
+            
+            const selectedOptionIndex = selectElement.value;
+            const isCorrect = q.options[parseInt(selectedOptionIndex)].isCorrect;
+            const correctAnswerText = q.options.find(opt => opt.isCorrect).text;
+
+            explanationElement.classList.add('visible');
+
+            if (isCorrect) {
+                score++;
+                feedbackElement.textContent = `Correct! (${correctAnswerText})`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-green';
+                selectElement.classList.add('correct');
+            } else {
+                feedbackElement.textContent = `Incorrect. The correct answer is: ${correctAnswerText}`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-red';
+                selectElement.classList.add('incorrect');
+            }
+        });
+
+        // Display overall results
+        document.getElementById('score-display').textContent = `Score: ${score} / ${QUIZ_LENGTH}`;
+        const feedbackMessage = document.getElementById('feedback-message');
+        
+        if (score === QUIZ_LENGTH) {
+            feedbackMessage.textContent = "Perfect Score! You have a rock-solid understanding of robot hardware and kinematics.";
+            feedbackMessage.className = 'mt-2 text-xl text-robot-green font-extrabold';
+        } else if (score >= QUIZ_LENGTH * 0.8) {
+            feedbackMessage.textContent = "Excellent! You have a strong grasp of the concepts. Review the explanations for the few questions you missed.";
+            feedbackMessage.className = 'mt-2 text-lg text-green-600 font-semibold';
+        } else if (score >= QUIZ_LENGTH * 0.6) {
+            feedbackMessage.textContent = "Good attempt! You're building a solid foundation. Focus on the explanation sections to clarify the core definitions.";
+            feedbackMessage.className = 'mt-2 text-lg text-yellow-600 font-semibold';
+        } else {
+            feedbackMessage.textContent = "Time for review! Take a moment to go through the provided notes and study the explanations to master these essential topics.";
+            feedbackMessage.className = 'mt-2 text-lg text-robot-red font-semibold';
+        }
+
+        // 3. Force reset after checking once
+        quizChecked = true;
+        updateButtonState();
+    }
+
+    /**
+     * Resets the entire quiz interface to the initial state.
+     */
+    function resetQuiz() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        selectElements.forEach(select => {
+            select.value = ""; // Clear selection
+            select.disabled = false; // Enable selection
+            select.classList.remove('correct', 'incorrect');
+            
+            const qId = select.id.split('-')[1];
+            document.getElementById(`feedback-${qId}`).textContent = '';
+            document.getElementById(`explanation-${qId}`).classList.remove('visible');
+        });
+
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('status-message').classList.add('hidden');
+        
+        quizChecked = false;
+        updateButtonState();
+    }
+
+
+    /**
+     * Initializes the quiz by generating the HTML for each question.
+     */
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = quizData.map((q, index) => `
+            <div class="question-block p-5 mb-6 bg-gray-50 rounded-lg border border-gray-200" data-question-id="${q.id}">
+                <label for="q-${q.id}" class="block text-lg font-semibold text-gray-800 mb-3">
+                    ${index + 1}. ${q.question}
+                </label>
+                <select 
+                    id="q-${q.id}" 
+                    onchange="updateButtonState()"
+                    class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-robot-blue focus:border-robot-blue appearance-none cursor-pointer"
+                >
+                    <option value="">-- Select your answer --</option>
+                    ${q.options.map((opt, optIndex) => `
+                        <option value="${optIndex}" data-is-correct="${opt.isCorrect}">${opt.text}</option>
+                    `).join('')}
+                </select>
+                <div id="feedback-${q.id}" class="mt-2 font-medium text-sm"></div>
+                <div id="explanation-${q.id}" class="explanation text-sm text-gray-700 bg-gray-100 p-3 mt-2 rounded-lg transition-all duration-500">
+                    <span class="font-bold">Explanation:</span> ${q.explanation}
+                </div>
+            </div>
+        `).join('');
+
+        updateButtonState(); // Set initial button state
+    }
+
+    // Initialize the quiz when the window loads
+    window.onload = renderQuiz;
+</script>
+</body>
+</html>
