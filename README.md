@@ -13,3 +13,9 @@ Click below to run the system online.
 Click below to run the system online.
 
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M02_Hardware_Tutorial.ipynb)
+
+## 3. Going to Tutorial 3: Robot Sensors (Concepts and Processing)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M03_Sensors_Tutorial.ipynb)
