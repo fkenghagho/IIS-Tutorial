@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Sensor Fundamentals Quiz</title>
+    <style>
+        /* Custom styles for the Inter font and a smooth appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .quiz-card {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        /* Style for the explanation container transitions */
+        .explanation {
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            padding-top: 0;
+        }
+        .explanation.visible {
+            max-height: 300px; /* Sufficient height for explanations */
+            opacity: 1;
+            padding-top: 0.5rem;
+        }
+        /* Styles for correct/incorrect borders on selection */
+        select.correct {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 1px #10b981;
+        }
+        select.incorrect {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'robot-blue': '#1c4d96',
+                        'robot-green': '#10b981',
+                        'robot-red': '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div id="app" class="min-h-screen p-4 sm:p-8 flex justify-center items-start">
+    <div class="w-full max-w-4xl bg-white p-6 sm:p-10 rounded-xl quiz-card mt-8">
+        <p class="text-lg text-gray-600 mb-8">Test your foundational knowledge on sensor basics, types, characteristics, and noise. You must answer all 16 questions before checking your results.</p>
+
+        <div id="quiz-container">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <button 
+            id="action-button" 
+            onclick="handleAction()"
+            class="w-full mt-8 px-6 py-3 bg-robot-blue text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-robot-blue/50 disabled-button"
+            disabled
+        >
+            Check Answers (0/16 Completed)
+        </button>
+       
+        <div id="status-message" class="mt-4 text-center text-red-500 font-medium hidden">
+            Please answer all 16 questions before checking your results.
+        </div>
+
+        <div id="results" class="mt-8 pt-6 border-t border-gray-200 hidden">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Your Results:</h2>
+            <p id="score-display" class="text-xl font-bold text-gray-800">Score: 0 / 16</p>
+            <p id="feedback-message" class="mt-2 text-lg"></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const QUIZ_LENGTH = 16;
+    let quizChecked = false; // State to track if the quiz has been checked
+
+    // Define the quiz data structure with 16 questions
+    const quizData = [
+        // --- Sensor Basics (Need, Principle, Conversion, Perception vs Sensing) ---
+        { id: 1, concept: "Need for Sensors", question: "Why is sensing essential for autonomous mobile robots?", 
+            options: [
+                { text: "To increase motor torque.", isCorrect: false }, 
+                { text: "The world dynamics and constituents are not fully known a priori.", isCorrect: true }, 
+                { text: "To reduce the physical weight of the robot.", isCorrect: false }, 
+                { text: "To guarantee that Inverse Kinematics has a unique solution.", isCorrect: false }
+            ], 
+            explanation: "Robots need sensors because they operate in environments where the dynamics and constituents are never completely known in advance, requiring them to gather information about the world." },
+        { id: 2, concept: "Sensor Principle", question: "The three primary steps performed by a sensor in its working principle are:", 
+            options: [
+                { text: "Plan, Execute, Verify.", isCorrect: false }, 
+                { text: "Detect, Measure, Convert.", isCorrect: true }, 
+                { text: "Encode, Transmit, Decode.", isCorrect: false }, 
+                { text: "Translate, Rotate, Scale.", isCorrect: false }
+            ], 
+            explanation: "Sensors work by first **Detecting** a physical phenomenon, then **Measuring** its magnitude, and finally **Converting** the measured energy into an electrical signal." },
+        { id: 3, concept: "Principle Example (Conversion)", question: "What is the typical physical principle utilized by a dynamic microphone to convert sound pressure waves into an electrical signal?", 
+            options: [
+                { text: "The Hall Effect.", isCorrect: false }, 
+                { text: "The Photoelectric Effect.", isCorrect: false }, 
+                { text: "The Piezoelectric Effect.", isCorrect: false }, 
+                { text: "Electro-magnetic Induction.", isCorrect: true } // MODIFIED: Correct answer is now Electro-magnetic Induction
+            ], 
+            explanation: "A dynamic microphone works on the principle of **Electro-magnetic Induction** (Faraday's Law), where sound waves cause a coil attached to a diaphragm to move within a magnetic field, generating an electrical current." }, // MODIFIED
+        { id: 4, concept: "Perception vs Sensing", question: "What is the key difference between **Sensing** and **Perception**?", 
+            options: [
+                { text: "Sensing requires active illumination, Perception is passive.", isCorrect: false }, 
+                { text: "Sensing is data acquisition; Perception is the interpretation of data into meaningful knowledge.", isCorrect: true }, 
+                { text: "Perception only works in 3D, Sensing works in 2D.", isCorrect: false }, 
+                { text: "Sensing uses digital signals, Perception uses analog signals.", isCorrect: false }
+            ], 
+            explanation: "**Sensing** is the physical process of acquiring raw data (e.g., a distance value). **Perception** is the cognitive process of interpreting that data to construct a model of the environment (e.g., 'there is an obstacle 2 meters away'). (M3_1, p. 11)" },
+       
+        // --- Sensor Types (Contact/Non-contact, Extero/Proprio/Intero, Mechanism) ---
+        { id: 5, concept: "Exteroceptive Sensors", question: "An **Exteroceptive** sensor is primarily used to measure what?", 
+            options: [
+                { text: "The robot's internal motor temperature.", isCorrect: false }, 
+                { text: "The robot's joint angle or position.", isCorrect: false }, 
+                { text: "The environment external to the robot (e.g., distance to an obstacle).", isCorrect: true }, 
+                { text: "The load exerted on the robot's base.", isCorrect: false }
+            ], 
+            explanation: "**Exteroceptive** sensors (like Lidar or Camera) gather information about the world outside the robot's own body. (M3_2, p. 5)" },
+        { id: 6, concept: "Interoceptive Sensors", question: "Sensors used to monitor the internal status of a robot, such as battery level, motor current, or internal temperature, are classified as:", // MODIFIED
+            options: [
+                { text: "Exteroceptive.", isCorrect: false }, 
+                { text: "Interoceptive.", isCorrect: true }, // MODIFIED: Correct answer is now Interoceptive
+                { text: "Proprioceptive.", isCorrect: false }, 
+                { text: "Non-contact.", isCorrect: false }
+            ], 
+            explanation: "**Interoceptive** sensors monitor the internal condition and health of the robot (like power and temperature), distinct from Proprioceptive sensors which measure the robot's motion or body position. (M3_2, p. 5)" }, // MODIFIED
+        { id: 7, concept: "Contact vs Non-contact", question: "A **Force/Torque sensor** on a robot gripper, which requires physical interaction to register a value, is classified as a:", 
+            options: [
+                { text: "Non-Contact Sensor.", isCorrect: false }, 
+                { text: "Proprioceptive Sensor.", isCorrect: false }, 
+                { text: "Active Sensor.", isCorrect: false }, 
+                { text: "Contact Sensor.", isCorrect: true }
+            ], 
+            explanation: "A **Contact Sensor** registers a quantity when it makes physical contact with an object (e.g., tactile sensors, force sensors). (M3_2, p. 9)" },
+        { id: 8, concept: "Acoustic Sensors", question: "An Ultrasonic sensor (Sonar) converts sound waves into electrical signals and is primarily classified under which sensor mechanism?", 
+            options: [
+                { text: "Electric Sensor.", isCorrect: false }, 
+                { text: "Optical Sensor.", isCorrect: false }, 
+                { text: "Acoustic Sensor.", isCorrect: true }, 
+                { text: "Mechanical Sensor.", isCorrect: false }
+            ], 
+            explanation: "**Acoustic Sensors** (like Sonar or Microphones) use sound or pressure waves as the input medium. (M3_2, p. 14)" },
+
+        // --- Sensor Characteristics (Range, Accuracy, Precision, Resolution, Latency, Hysteresis) ---
+        { id: 9, concept: "Range", question: "The **Range** of a sensor specifies:", 
+            options: [
+                { text: "How quickly the sensor responds to an input change.", isCorrect: false }, 
+                { text: "The deviation between the measured and the true value.", isCorrect: false }, 
+                { text: "The smallest detectable change in the measured variable.", isCorrect: false }, 
+                { text: "The maximum and minimum value range over which the sensor works well.", isCorrect: true }
+            ], 
+            explanation: "The **Range** defines the effective operating limits of the sensor. (M3_3, p. 5)" },
+        { id: 10, concept: "Accuracy", question: "Which characteristic measures how close the sensor's measurement is to the true, accepted value?", 
+            options: [
+                { text: "Precision.", isCorrect: false }, 
+                { text: "Resolution.", isCorrect: false }, 
+                { text: "Accuracy.", isCorrect: true }, 
+                { text: "Sensitivity.", isCorrect: false }
+            ], 
+            explanation: "**Accuracy** is the measure of the sensor's correctness compared to the real value. (M3_3, p. 7)" },
+        { id: 11, concept: "Resolution", question: "What is defined as the smallest change in the input quantity that can be reliably detected by a sensor?", 
+            options: [
+                { text: "Sensitivity.", isCorrect: false }, 
+                { text: "Range.", isCorrect: false }, 
+                { text: "Resolution.", isCorrect: true }, 
+                { text: "Hysteresis.", isCorrect: false }
+            ], 
+            explanation: "**Resolution** describes the sensor's ability to distinguish between very similar input values. (M3_3, p. 10)" },
+        { id: 12, concept: "Latency", question: "Which characteristic defines the unavoidable time delay between the physical event occurring and the digitized sensor output being available to the robot's processor?", 
+            options: [
+                { text: "Range.", isCorrect: false }, 
+                { text: "Hysteresis.", isCorrect: false }, 
+                { text: "Sensitivity.", isCorrect: false }, 
+                { text: "Latency.", isCorrect: true }
+            ], 
+            explanation: "**Latency** is critical in real-time control systems, as it represents the delay in information flow. (M3_3, p. 12)" },
+       
+        // --- Sensor Noise & Denoising (Errors, Outliers, Filtering, Interpolation) ---
+        { id: 13, concept: "Systematic Error", question: "Which type of error is typically reproducible, often due to faulty calibration or sensor placement, and leads to poor **Accuracy**?", 
+            options: [
+                { text: "Random Error.", isCorrect: false }, 
+                { text: "Systematic Error.", isCorrect: true }, 
+                { text: "Outlier.", isCorrect: false }, 
+                { text: "Hysteresis.", isCorrect: false }
+            ], 
+            explanation: "**Systematic Errors** are consistent and repeatable; they can often be compensated for through calibration. (M3_4, p. 5)" },
+        { id: 14, concept: "Random Error", question: "Which type of error is non-reproducible and unpredictable, generally leading to poor **Precision**?", 
+            options: [
+                { text: "Systematic Error.", isCorrect: false }, 
+                { text: "Random Error.", isCorrect: true }, 
+                { text: "Bias Error.", isCorrect: false }, 
+                { text: "Quantization Error.", isCorrect: false }
+            ], 
+            explanation: "**Random Errors** are caused by unpredictable factors (e.g., electronic noise or environmental fluctuations) and affect the consistency of repeated measurements. (M3_4, p. 5)" },
+        { id: 15, concept: "Denoising: Interpolation", question: "In the context of denoising, what is **Interpolation** used for?", 
+            options: [
+                { text: "To replace a faulty data point by estimating its value from neighboring data points.", isCorrect: true }, 
+                { text: "To remove high-frequency components from a signal.", isCorrect: false }, 
+                { text: "To convert analog signals to digital signals.", isCorrect: false }, 
+                { text: "To correct systematic sensor bias.", isCorrect: false }
+            ], 
+            explanation: "**Interpolation** is a technique used to fill gaps or replace corrupted values (like spikes or drop-outs) in a data series by drawing from surrounding valid data points. (M3_4, p. 10)" },
+        { id: 16, concept: "Noise vs Outlier", question: "How does a data **Outlier** typically differ from standard random sensor noise?", 
+            options: [
+                { text: "Outliers have a lower magnitude than noise.", isCorrect: false }, 
+                { text: "Outliers are usually caused by systematic errors.", isCorrect: false }, 
+                { text: "An Outlier is an unusually large deviation from the expected value that occurs rarely (often due to transient external effects).", isCorrect: true }, 
+                { text: "Outliers can be completely removed using a simple low-pass filter.", isCorrect: false }
+            ], 
+            explanation: "While noise is a constant, small deviation, an **Outlier** is a large, isolated deviation, often a momentary fault (e.g., a radar reflection hitting a bird, resulting in a spurious distance measurement). (M3_4, p. 6-7)" }
+    ];
+
+    /**
+     * Toggles the state of the main action button based on completion.
+     */
+    function updateButtonState() {
+        const actionButton = document.getElementById('action-button');
+        const selectElements = document.querySelectorAll('#quiz-container select');
+       
+        let answeredCount = 0;
+        selectElements.forEach(select => {
+            if (select.value !== "") {
+                answeredCount++;
+            }
+        });
+
+        if (quizChecked) {
+            actionButton.textContent = "Reset Quiz to Try Again";
+            actionButton.classList.remove('disabled-button', 'bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.classList.add('bg-robot-red', 'hover:bg-red-700');
+            actionButton.disabled = false;
+        } else if (answeredCount === QUIZ_LENGTH) {
+            actionButton.textContent = `Check Answers (${QUIZ_LENGTH}/${QUIZ_LENGTH} Completed)`;
+            actionButton.classList.remove('disabled-button', 'bg-robot-red', 'hover:bg-red-700');
+            actionButton.classList.add('bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.disabled = false;
+            document.getElementById('status-message').classList.add('hidden');
+        } else {
+            actionButton.textContent = `Check Answers (${answeredCount}/${QUIZ_LENGTH} Completed)`;
+            actionButton.classList.remove('bg-robot-red', 'hover:bg-red-700', 'bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.classList.add('disabled-button');
+            actionButton.disabled = true;
+            document.getElementById('status-message').classList.add('hidden');
+        }
+    }
+
+    /**
+     * Toggles between checking answers and resetting the quiz based on the state.
+     */
+    function handleAction() {
+        if (quizChecked) {
+            resetQuiz();
+        } else {
+            checkAnswers();
+        }
+    }
+
+    /**
+     * Checks the student's answers and displays results and feedback.
+     */
+    function checkAnswers() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+       
+        // 1. Mandatory: Check if all questions are answered
+        let allAnswered = true;
+        selectElements.forEach(select => {
+            if (select.value === "") {
+                allAnswered = false;
+            }
+            // Disable selections after checking
+            select.disabled = true;
+        });
+
+        if (!allAnswered) {
+            document.getElementById('status-message').classList.remove('hidden');
+            return; 
+        }
+
+        // --- Execute Check ---
+        let score = 0;
+        document.getElementById('results').classList.remove('hidden');
+
+        quizData.forEach(q => {
+            const selectElement = document.getElementById(`q-${q.id}`);
+            const feedbackElement = document.getElementById(`feedback-${q.id}`);
+            const explanationElement = document.getElementById(`explanation-${q.id}`);
+           
+            const selectedOptionIndex = selectElement.value;
+            // The isCorrect property is retrieved from the original quizData object
+            const isCorrect = q.options[parseInt(selectedOptionIndex)].isCorrect; 
+            const correctAnswerText = q.options.find(opt => opt.isCorrect).text;
+
+            explanationElement.classList.add('visible');
+
+            if (isCorrect) {
+                score++;
+                feedbackElement.textContent = `Correct! (${correctAnswerText})`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-green';
+                selectElement.classList.add('correct');
+            } else {
+                feedbackElement.textContent = `Incorrect. The correct answer is: ${correctAnswerText}`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-red';
+                selectElement.classList.add('incorrect');
+            }
+        });
+
+        // Display overall results
+        document.getElementById('score-display').textContent = `Score: ${score} / ${QUIZ_LENGTH}`;
+        const feedbackMessage = document.getElementById('feedback-message');
+       
+        if (score === QUIZ_LENGTH) {
+            feedbackMessage.textContent = "Perfect Score! You have a rock-solid understanding of sensor fundamentals.";
+            feedbackMessage.className = 'mt-2 text-xl text-robot-green font-extrabold';
+        } else if (score >= QUIZ_LENGTH * 0.8) {
+            feedbackMessage.textContent = "Excellent! You have a strong grasp of the concepts. Review the explanations for the few questions you missed.";
+            feedbackMessage.className = 'mt-2 text-lg text-green-600 font-semibold';
+        } else if (score >= QUIZ_LENGTH * 0.6) {
+            feedbackMessage.textContent = "Good attempt! You're building a solid foundation. Focus on the explanation sections to clarify the core definitions.";
+            feedbackMessage.className = 'mt-2 text-lg text-yellow-600 font-semibold';
+        } else {
+            feedbackMessage.textContent = "Time for review! Take a moment to go through the provided notes and study the explanations to master these essential topics.";
+            feedbackMessage.className = 'mt-2 text-lg text-robot-red font-semibold';
+        }
+
+        // 3. Force reset after checking once
+        quizChecked = true;
+        updateButtonState();
+    }
+
+    /**
+     * Resets the entire quiz interface to the initial state.
+     */
+    function resetQuiz() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+       
+        selectElements.forEach(select => {
+            select.value = ""; // Clear selection
+            select.disabled = false; // Enable selection
+            select.classList.remove('correct', 'incorrect');
+           
+            const qId = select.id.split('-')[1];
+            document.getElementById(`feedback-${qId}`).textContent = '';
+            document.getElementById(`explanation-${qId}`).classList.remove('visible');
+        });
+
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('status-message').classList.add('hidden');
+       
+        quizChecked = false;
+        updateButtonState();
+    }
+
+
+    /**
+     * Initializes the quiz by generating the HTML for each question.
+     */
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = quizData.map((q, index) => `
+            <div class="question-block p-5 mb-6 bg-gray-50 rounded-lg border border-gray-200" data-question-id="${q.id}">
+                <label for="q-${q.id}" class="block text-lg font-semibold text-gray-800 mb-3">
+                    ${index + 1}. ${q.question}
+                </label>
+                <select 
+                    id="q-${q.id}" 
+                    onchange="updateButtonState()"
+                    class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-robot-blue focus:border-robot-blue appearance-none cursor-pointer"
+                >
+                    <option value="">-- Select your answer --</option>
+                    ${q.options.map((opt, optIndex) => `
+                        <option value="${optIndex}">${opt.text}</option>
+                    `).join('')}
+                </select>
+                <div id="feedback-${q.id}" class="mt-2 font-medium text-sm"></div>
+                <div id="explanation-${q.id}" class="explanation text-sm text-gray-700 bg-gray-100 p-3 mt-2 rounded-lg transition-all duration-500">
+                    <span class="font-bold">Explanation:</span> ${q.explanation}
+                </div>
+            </div>
+        `).join('');
+
+        updateButtonState(); // Set initial button state
+    }
+
+    // Initialize the quiz when the window loads
+    window.onload = renderQuiz;
+</script>
+</body>
+</html>
