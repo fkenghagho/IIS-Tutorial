@@ -9,10 +9,7 @@ ENV ROS_WS=${HOME}/workspace/ros
 
  USER root
  RUN apt update && apt install -y curl
- RUN pip install numpy
- RUN pip install matplotlib
- RUN pip install scipy
- RUN pip install Pillow
+ RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension
 #===========================================================#
 
 # Copy content to the image
