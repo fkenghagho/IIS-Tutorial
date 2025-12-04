@@ -9,7 +9,7 @@ from scipy import fftpack
 from matplotlib.colors import LogNorm
 from scipy.interpolate import CubicSpline
 import random
-
+import cv2 as cv
 
 def display_image_grid(
     images: List[np.ndarray],
