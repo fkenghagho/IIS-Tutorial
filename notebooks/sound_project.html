@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+        .card { background-color: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); padding: 24px; }
+        .header { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
+        .section-title { font-size: 1.5rem; font-weight: 600; color: #1f2937; margin-top: 20px; margin-bottom: 10px; border-left: 4px solid #f97316; padding-left: 10px; }
+        code { background-color: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-weight: 500; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-4xl mx-auto space-y-8">
+
+        <div class="card space-y-4">
+            <h2 class="section-title">Introduction: The SIFT Analogy</h2>
+            <p class="text-gray-700">The Scale-Invariant Feature Transform (SIFT) in computer vision works by identifying unique, stable keypoints (e.g., corners, blobs) and generating a robust, multi-dimensional descriptor for each. This descriptor allows for reliable matching even if the image is scaled or rotated. We will apply this concept to sound:</p>
+            <ul class="list-disc ml-6 mt-2 text-gray-700">
+                <li><strong>SIFT Keypoint</strong> -> Acoustic Feature (a distinctive property of the sound spectrum).</li>
+                <li><strong>SIFT Descriptor</strong> -> Feature Vector (a numerical signature representing the sound class).</li>
+                <li><strong>SIFT Matching</strong> -> Classification (comparing the feature vector to known templates).</li>
+            </ul>
+            <p class="text-gray-700 mt-2">Your goal is to build a classifier that distinguishes between a <strong>Bird Song</strong> and a <strong>Dog Bark</strong> using these spectral descriptors.</p>
+        </div>
+
+        <div class="card space-y-4">
+            <h2 class="section-title">Preparation Questions (Conceptual Foundation)</h2>
+            <div class="space-y-6">
+                <!-- Question 1: How Decomposition Helps -->
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">1. From Waveform to Spectral Shape: The Role of Fourier Transform</h3>
+                    <p class="mt-2 text-gray-700">A raw sound waveform is highly volatile. Explain why the Fast Fourier Transform (FFT) is essential for classification. How does the resulting frequency magnitude spectrum provide a more stable "signature" or "spectral shape" of the sound, making it a better basis for descriptors, similar to how an image gradient is the basis for SIFT keypoint location? </p>
+                </div>
+                
+                <!-- Question 2: Feature Encoding (The Descriptor) -->
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">2. Designing a Robust Feature Vector (The Spectral Descriptor)</h3>
+                    <p class="mt-2 text-gray-700">The raw frequency spectrum is too large for matching. We need a small, robust feature vector (our SIFT-like descriptor) that is invariant to irrelevant changes (like overall volume/amplitude). Propose two different features (e.g., related to energy distribution or spectral shape) that you would extract from the spectrum. Justify why this 2-dimensional feature vector (F1, F2) would reliably separate Bird (high-frequency energy) from Dog (low-frequency energy).</p>
+                </div>
+                
+                <!-- Question 3: Matching Strategy -->
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">3. Classification by Descriptor Matching</h3>
+                    <p class="mt-2 text-gray-700">In SIFT matching, we compare the descriptor vector of an unknown feature against a database of known descriptors. Describe the mathematical process you will use to compare an unknown test sound's feature vector against the average 'Bird' feature vector and the average 'Dog' feature vector. Why is a standard distance metric (like Euclidean distance) appropriate for this classification task?</p>
+                </div>
+            </div>
+        </div>
+
+        
+</body>
+</html>

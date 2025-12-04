@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Perception Quiz (17 Questions)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic appeal and layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .question-card.correct {
+            border: 1px solid #10b981;
+            background-color: #f0fdf4; /* Green tint */
+        }
+        .question-card.incorrect {
+            border: 1px solid #ef4444;
+            background-color: #fef2f2; /* Red tint */
+        }
+        .dropdown {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            background-color: white;
+            font-size: 16px;
+            appearance: none; /* Hide default arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234B5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1.5em;
+        }
+        .dropdown:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <p class="text-center text-gray-600 mb-8">17 Questions on Interpretation, Localization, and Knowledge Representation. Select the correct answer from the dropdown list for each question.</p>
+
+        <form id="perception-quiz-form">
+            <!-- Questions will be injected here by JavaScript -->
+        </form>
+
+        <div class="flex justify-center mt-8">
+            <button id="submit-quiz-btn"
+                class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-300">
+                Submit Answers
+            </button>
+        </div>
+
+        <div id="results" class="hidden">
+            <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-800 border-t pt-4">Results Summary</h2>
+            <div id="score-display" class="text-xl font-medium p-4 rounded-lg bg-blue-100 text-blue-800"></div>
+            <p id="review-instruction" class="text-gray-600 mt-2">Review your answers above to see the correct solution for each question.</p>
+        </div>
+    </div>
+
+    <script>
+        // Define the quiz questions
+        const quizQuestions = [
+            // --- Lecture 4.1: Overview (Q1-Q4) ---
+            {
+                question: "What is the primary difference between **Sensing** and **Perception**?",
+                options: {
+                    A: "Sensing is high-level, Perception is low-level.",
+                    B: "Sensing is low-level data acquisition, Perception is mapping data to meaning.",
+                    C: "Sensing is always visual, Perception is always tactile.",
+                    D: "Sensing is digital, Perception is analog.",
+                },
+                answer: "B",
+            },
+            {
+                question: "Which perceptual task addresses the question: 'How should I act?' (e.g., understanding obstacles or free-working space).",
+                options: {
+                    A: "Instance Recognition",
+                    B: "Object Categorization",
+                    C: "Context Perception",
+                    D: "Sensor Fusion",
+                },
+                answer: "C",
+            },
+            {
+                question: "Perception acts as the link between which two stages of the fundamental robot control loop?",
+                options: {
+                    A: "Plan and Execute",
+                    B: "Sense and Reason",
+                    C: "Input and Output",
+                    D: "Map and Localize",
+                },
+                answer: "B",
+            },
+            {
+                question: "A major challenge in image-based perception is the gap between low-level sensory input and what?",
+                options: {
+                    A: "Low energy consumption",
+                    B: "Robust high-level decisions",
+                    C: "High sensor resolution",
+                    D: "Ambient temperature readings",
+                },
+                answer: "B",
+            },
+            
+            // --- NEW QUESTION: Perception Pipeline (Q5) ---
+            {
+                question: "Which sequence correctly represents the general stages of a robot perception pipeline focusing on feature extraction?",
+                options: {
+                    A: "Feature Extraction → Preprocessing → Output Function",
+                    B: "Preprocessing → Feature Extraction (Selection, Detection, Description) → Output Function",
+                    C: "Sensing → Output Function → Feature Extraction → Preprocessing",
+                    D: "Preprocessing → Feature Detection → Output Function → Feature Description",
+                },
+                answer: "B",
+            },
+
+            // --- Lecture 4.2: Background Knowledge (Q6-Q9) ---
+            {
+                question: "Exploiting assumptions about the environment (like relevant ROIs or known object sizes) primarily helps perception methods by making them:",
+                options: {
+                    A: "More expensive",
+                    B: "More reliable, accurate, and faster",
+                    C: "Completely independent of sensor data",
+                    D: "Suitable only for outdoor environments",
+                },
+                answer: "B",
+            },
+            {
+                question: "The logical statement `on(cup1, table1)` is an example of which type of knowledge representation?",
+                options: {
+                    A: "Digital Twin",
+                    B: "Feature Descriptors",
+                    C: "Symbolic Environment Models (First-Order Logic)",
+                    D: "Point Cloud Data",
+                },
+                answer: "C",
+            },
+            {
+                question: "What unique capability is offered by the **Digital Twin** approach due to its comprehensive and equivalent artificial world?",
+                options: {
+                    A: "Simple 2D image processing",
+                    B: "Physics-based reasoning and simulation",
+                    C: "Low system complexity",
+                    D: "Minimal modeling effort",
+                },
+                answer: "B",
+            },
+            {
+                question: "What is the main drawback of a Digital Twin approach compared to a Purely Symbolic Model?",
+                options: {
+                    A: "Limited robustness",
+                    B: "Low modeling effort",
+                    C: "High system complexity and modeling effort",
+                    D: "Lack of flexibility",
+                },
+                answer: "C",
+            },
+
+            // --- Lecture 4.3: Localization and Detection (Q10-Q13) ---
+            {
+                question: "Which task is defined as identifying *which* objects are present and locating their general bounding boxes, often from a set of known classes?",
+                options: {
+                    A: "Object Localization",
+                    B: "Mapping",
+                    C: "Object Detection",
+                    D: "Pose Estimation",
+                },
+                answer: "C",
+            },
+            {
+                question: "Which type of sensor data is crucial for 3D object localization because it provides explicit distance information?",
+                options: {
+                    A: "2D RGB Data (Color image only)",
+                    B: "Acoustic Data (Sonar/Ultrasound)",
+                    C: "3D (RGB)D Data (Color + Depth)",
+                    D: "Proprioceptive Data (Joint angles)",
+                },
+                answer: "C",
+            },
+            {
+                question: "What specific geometric technique is typically used in the **Tabletop Segmentation** process to find and fit the flat surface of a table within a point cloud?",
+                options: {
+                    A: "SIFT Keypoint Detection",
+                    B: "RANSAC Plane Fitting",
+                    C: "Hough Transform",
+                    D: "Convolutional Filtering",
+                },
+                answer: "B",
+            },
+            {
+                question: "What is the second step in the general scheme for Object Detection using local descriptors (e.g., SIFT), immediately after keypoint detection?",
+                options: {
+                    A: "Validate matches with a geometry model",
+                    B: "Calculate local descriptors (feature vectors)",
+                    C: "Match descriptors for different images",
+                    D: "Image normalization",
+                },
+                answer: "B",
+            },
+
+            // --- Lecture 4.4: Perception as UIM (Q14-Q17) ---
+            {
+                question: "RoboSherlock applies the **Unstructured Information Management (UIM)** paradigm, treating perception primarily as a knowledge-based system for what purpose?",
+                options: {
+                    A: "Real-time sensor filtering",
+                    B: "Query answering",
+                    C: "Robot motor control",
+                    D: "Image compression",
+                },
+                answer: "B",
+            },
+            {
+                question: "In the UIM framework for perception, what entity is equivalent to a 'specific perception algorithm' (e.g., a color or pose estimator)?",
+                options: {
+                    A: "Analysis Engine (AE)",
+                    B: "Subject of Analysis (SofA)",
+                    C: "Annotator",
+                    D: "Common Analysis Structure (CAS)",
+                },
+                answer: "C",
+            },
+            {
+                question: "When an object hypothesis is formed in UIM, what is it referred to as?",
+                options: {
+                    A: "Annotator",
+                    B: "Analysis Engine",
+                    C: "Subject of Analysis (SofA)",
+                    D: "Type-System",
+                },
+                answer: "C",
+            },
+            {
+                question: "The **Common Analysis Structure (CAS)** and Type-System are used in UIM primarily to provide a structured format for doing what?",
+                options: {
+                    A: "To store sensor calibration data",
+                    B: "To define the robot's action space",
+                    C: "Storing and exchanging generated annotations",
+                    D: "Physically connecting sensors to the robot",
+                },
+                answer: "C",
+            },
+        ];
+
+        const quizForm = document.getElementById('perception-quiz-form');
+        const submitBtn = document.getElementById('submit-quiz-btn');
+        const resultsDiv = document.getElementById('results');
+        const scoreDisplay = document.getElementById('score-display');
+
+        /**
+         * Renders the quiz questions to the HTML form using dropdowns.
+         */
+        function renderQuiz() {
+            quizQuestions.forEach((q, index) => {
+                const qNum = index + 1;
+                let optionsHtml = '<option value="">-- Select your answer --</option>';
+                for (const key in q.options) {
+                    // Use the key (A, B, C, D) as the value
+                    optionsHtml += `<option value="${key}">${key}) ${q.options[key]}</option>`;
+                }
+
+                const questionHtml = `
+                    <div id="card-q${qNum}" class="question-card">
+                        <p class="text-lg font-semibold mb-3 text-gray-800">
+                            ${qNum}. ${q.question}
+                        </p>
+                        <select id="question${qNum}" name="question${qNum}" class="dropdown">
+                            ${optionsHtml}
+                        </select>
+                        <div id="feedback-q${qNum}" class="mt-3 text-sm hidden"></div>
+                    </div>
+                `;
+                quizForm.innerHTML += questionHtml;
+            });
+        }
+
+        /**
+         * Calculates the score, displays results, and provides feedback.
+         */
+        function submitQuiz() {
+            let score = 0;
+            const totalQuestions = quizQuestions.length;
+
+            quizQuestions.forEach((q, index) => {
+                const qNum = index + 1;
+                const card = document.getElementById(`card-q${qNum}`);
+                const dropdown = document.getElementById(`question${qNum}`);
+                const feedbackDiv = document.getElementById(`feedback-q${qNum}`);
+                const selectedValue = dropdown.value;
+                const correctAnswer = q.answer;
+
+                // Reset state
+                card.classList.remove('correct', 'incorrect');
+                feedbackDiv.classList.add('hidden');
+                feedbackDiv.innerHTML = '';
+                
+                // Determine correctness
+                if (selectedValue === correctAnswer) {
+                    score++;
+                    card.classList.add('correct');
+                    feedbackDiv.innerHTML = '<span class="text-green-600 font-semibold">Correct!</span>';
+                } else if (selectedValue === "") {
+                    // Not answered
+                    card.classList.add('incorrect');
+                    feedbackDiv.innerHTML = `<span class="text-red-600 font-semibold">Missed.</span> The correct answer was <span class="font-bold">${correctAnswer}) ${q.options[correctAnswer]}</span>.`;
+                } else {
+                    // Incorrect answer
+                    card.classList.add('incorrect');
+                    feedbackDiv.innerHTML = `<span class="text-red-600 font-semibold">Incorrect.</span> You chose ${selectedValue}. The correct answer was <span class="font-bold">${correctAnswer}) ${q.options[correctAnswer]}</span>.`;
+                }
+
+                feedbackDiv.classList.remove('hidden');
+            });
+
+            // Display overall results
+            resultsDiv.classList.remove('hidden');
+            scoreDisplay.innerHTML = `You scored ${score} out of ${totalQuestions} (${((score / totalQuestions) * 100).toFixed(0)}%).`;
+            submitBtn.textContent = 'Retake Quiz';
+        }
+
+        // Attach event listener
+        submitBtn.addEventListener('click', submitQuiz);
+
+        // Initialize quiz on page load
+        document.addEventListener('DOMContentLoaded', renderQuiz);
+    </script>
+
+</body>
+</html>

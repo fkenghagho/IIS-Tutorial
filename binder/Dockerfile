@@ -7,9 +7,10 @@ ENV ROS_WS=${HOME}/workspace/ros
 #============= Install extra software packages =============#
 # Examples:
 
- USER root
- RUN apt update && apt install -y curl
- RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension
+ USER root
+ RUN apt update && apt install -y curl
+ # ADDED opencv-python to the existing pip installation line
+ RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python
 #===========================================================#
 
 # Copy content to the image
@@ -24,4 +25,3 @@ RUN ln -s ${ROS_WS} ${PWD}/ROS_WS
 # The entrypoint of the docker image
 COPY --chown=${NB_USER}:users binder/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-
