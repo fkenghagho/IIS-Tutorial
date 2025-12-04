@@ -8,7 +8,7 @@ from PIL import Image, ImageFilter, ImageOps
 from scipy import fftpack
 from matplotlib.colors import LogNorm
 from scipy.interpolate import CubicSpline
-import rando
+import random
 
 
 def display_image_grid(
