@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalman Filter for Broomba Localization (Corrected B Matrix)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght+400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .matrix { font-family: 'Roboto Mono', monospace; font-size: 0.9em; display: inline-block; vertical-align: middle; }
+        .matrix-braces { font-size: 1.5em; vertical-align: sub; }
+        .container { max-width: 1200px; }
+        .math-block { background-color: #f0f4f8; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+        .step-card { background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); margin-bottom: 1rem; padding: 1rem; transition: transform 0.2s; }
+        .step-card:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="container mx-auto p-6">
+
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Kalman Filter for Broomba Self-Localization</h1>
+    <p class="text-gray-600 mb-6">
+        The control input vector is defined as the change in velocity , and the measurement vector  is the observed position ($$u_t, z_t, \Delta v = a_t \cdot \Delta t $$).
+    </p>
+
+    <!-- Part 1: Derivation -->
+    <div class="math-block">
+        <h2 class="text-xl font-semibold mb-4 text-indigo-700">1. State Space and Model Derivation</h2>
+
+        <h3 class="text-lg font-medium mb-2">State Vector (Position and Velocity)</h3>
+        $$ x_t = \begin{bmatrix} x \\ y \\ \dot{x} \\ \dot{y} \end{bmatrix}_t $$
+        <h3 class="text-lg font-medium mb-2">Motion Model (Prediction Equation)</h3>
+        The control input $\mathbf{u}$ is the change in velocity, $\Delta v_t = a_t \cdot \Delta t$.
+        $$
+        \hat{x}_t^-
+        =
+        \underbrace{\begin{bmatrix} 1 & 0 & \Delta t & 0 \\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}}_{\text{A (State Transition Matrix)}}
+        \hat{x}_{t-1}
+        +
+        \underbrace{\begin{bmatrix} \frac{1}{2} \Delta t & 0 \\ 0 & \frac{1}{2} \Delta t \\ 1 & 0 \\ 0 & 1 \end{bmatrix}}_{\text{B (Control Matrix)}}
+        \underbrace{\begin{bmatrix} u_x \\ u_y \end{bmatrix}_{t}}_{\text{u (Control Vector: } \Delta v_t)}
+        $$
+        
+        <h3 class="text-lg font-medium mb-2">A. State Transition Probability $$P(x_t | u_t, x_{t-1})$$</h3>
+        The state transition probability is modeled as a multivariate Gaussian distribution:
+        $$ 
+        P(x_t | u_t, x_{t-1}) = \mathcal{N}(\mu, \Sigma) 
+        $$
+        where:
+        $$
+        \mu = A x_{t-1} + B u_t 
+        $$
+        $$
+        \Sigma = Q
+        $$
+
+        <h3 class="text-lg font-medium mb-2">Process Noise Covariance Matrix - Uncertainty from Movement</h3>
+        $$ Q = \begin{bmatrix} 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix} $$
+        
+        <h3 class="text-lg font-medium mb-2">Measurement Model (Update Equation)</h3>
+        The measurement is the observed position from the sensor:
+        $$
+        z_t
+        =
+        \underbrace{\begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}}_{\text{H (Measurement Matrix)}}
+        x_t
+        +
+        \text{noise}
+        $$
+        <h3 class="text-lg font-medium mb-2">Measurement Noise Covariance Matrix - Uncertainty from Sensor</h3>
+        $$ R = \begin{bmatrix} 1 & 0.5 \\ 0.5 & 1 \end{bmatrix} $$
+        
+        <h3 class="text-lg font-medium mb-2">Initial State $$\text{Bel}(x_0) = \mathcal{N}(\hat{x}_0, \Sigma_0)$$</h3>
+    </div>
+
+</div>
+
+<script>
+// --- Matrix Library Functions (Same as before) ---
+
+const createMatrix = (rows, cols, value = 0) => Array(rows).fill(0).map(() => Array(cols).fill(value));
+
+const matrixAdd = (A, B) => {
+    const rows = A.length;
+    const cols = A[0].length;
+    const C = createMatrix(rows, cols);
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            C[i][j] = A[i][j] + B[i][j];
+        }
+    }
+    return C;
+};
+
+const matrixSubtract = (A, B) => {
+    const rows = A.length;
+    const cols = A[0].length;
+    const C = createMatrix(rows, cols);
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            C[i][j] = A[i][j] - B[i][j];
+        }
+    }
+    return C;
+};
+
+const matrixMultiply = (A, B) => {
+    const rowsA = A.length;
+    const colsA = A[0].length;
+    const colsB = B[0].length;
+    if (colsA !== B.length) {
+        throw new Error("Matrix dimensions must align for multiplication.");
+    }
+    const C = createMatrix(rowsA, colsB);
+    for (let i = 0; i < rowsA; i++) {
+        for (let j = 0; j < colsB; j++) {
+            for (let k = 0; k < colsA; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return C;
+};
+
+const matrixTranspose = (A) => {
+    const rows = A.length;
+    const cols = A[0].length;
+    const T = createMatrix(cols, rows);
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            T[j][i] = A[i][j];
+        }
+    }
+    return T;
+};
+
+const identityMatrix = (size) => {
+    const I = createMatrix(size, size);
+    for (let i = 0; i < size; i++) {
+        I[i][i] = 1;
+    }
+    return I;
+};
+
+const matrixInverse2x2 = (A) => {
+    if (A.length !== 2 || A[0].length !== 2) throw new Error("Inverse function only handles 2x2 matrices.");
+    const det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+    if (Math.abs(det) < 1e-9) throw new Error("Matrix is singular (or close to it) and cannot be inverted.");
+    const invDet = 1 / det;
+    return [
+        [invDet * A[1][1], invDet * -A[0][1]],
+        [invDet * -A[1][0], invDet * A[0][0]]
+    ];
+};
+
+// --- Helper Functions for Display (Same as before) ---
+
+const formatMatrix = (M) => {
+    const rows = M.length;
+    const cols = M[0].length;
+    let html = '<span class="matrix-braces">[</span><div class="matrix">';
+    M.forEach(row => {
+        html += '<div class="flex justify-around">';
+        row.forEach(val => {
+            const displayVal = Math.abs(val) < 1e-9 ? 0 : val; 
+            html += `<span class="px-2 w-16 text-right">${displayVal.toFixed(5)}</span>`;
+        });
+        html += '</div>';
+    });
+    html += '</div><span class="matrix-braces">]</span>';
+    return html;
+};
+
+const createStepHTML = (t, stateHat, sigmaHat, state, sigma) => {
+    return `
+        <div class="step-card">
+            <h4 class="text-xl font-bold mb-2 text-indigo-800">Time Step $t = ${t}$</h4>
+            
+            <div class="mb-4 p-3 bg-gray-50 rounded">
+                <h5 class="font-semibold text-lg text-gray-700">Prediction (Prior)</h5>
+                <div class="mt-2 flex space-x-4 flex-wrap">
+                    <div class="min-w-[45%]">
+                        <p class="font-mono text-sm mb-1 text-gray-600">Predicted State $$\hat{x}_t^-$$:</p>
+                        ${formatMatrix(stateHat)}
+                    </div>
+                    <div class="min-w-[45%]">
+                        <p class="font-mono text-sm mb-1 text-gray-600">Predicted Covariance $$\Sigma_t^-$$:</p>
+                        ${formatMatrix(sigmaHat)}
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-green-100 rounded">
+                <h5 class="font-semibold text-lg text-gray-700">Update (Posterior)</h5>
+                <div class="mt-2 flex space-x-4 flex-wrap">
+                    <div class="min-w-[45%]">
+                        <p class="font-mono text-sm mb-1 text-gray-600">Final State $$\hat{x}_t$$:</p>
+                        ${formatMatrix(state)}
+                    </div>
+                    <div class="min-w-[45%]">
+                        <p class="font-mono text-sm mb-1 text-gray-600">Final Covariance $$\Sigma_t$$:</p>
+                        ${formatMatrix(sigma)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+
+// --- Problem Data and Constants (Same as before) ---
+
+const initial_x = [
+    [-1.60804],
+    [1.70203],
+    [0],
+    [0]
+]; // [x, y, x_dot, y_dot] at t=0
+
+const initial_sigma = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+];
+
+const Q_PROCESS_NOISE = [ 
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 1.0, 0.5],
+    [0, 0, 0.5, 1.0]
+];
+
+const R_MEASUREMENT_NOISE = [ 
+    [1, 0.5],
+    [0.5, 1]
+];
+
+const H = [ // Measurement Matrix
+    [1, 0, 0, 0],
+    [0, 1, 0, 0]
+];
+
+const H_T = matrixTranspose(H);
+
+// u here represents the measured change in velocity (Delta v)
+const DATA = [
+    { t: 0.36, dt: 0.36, u: [[0.108496], [0.0130044]], z: [[-1.60804], [1.70203]] },
+    { t: 0.43, dt: 0.07, u: [[0.066846], [0.0047685]], z: [[-1.60798], [1.70196]] },
+    { t: 0.49, dt: 0.06, u: [[0.047755], [0.0]], z: [[-1.6067], [1.70054]] },
+    { t: 0.53, dt: 0.04, u: [[0.004768], [0.0]], z: [[-1.60503], [1.69881]] },
+    { t: 0.59, dt: 0.06, u: [[0.028646], [0.0]], z: [[-1.60116], [1.695]] },
+];
+
+
+// --- Kalman Filter Implementation ---
+
+/**
+ * Performs one full step of the Kalman Filter (Predict and Update) using the Velocity Change Input model.
+ */
+const kalmanStep = (x_prev, Sigma_prev, data) => {
+    const dt = data.dt;
+    const u = data.u;
+    const z = data.z;
+
+    // --- 1. Define time-dependent matrices (A and B) ---
+    
+    // A (State Transition Matrix)
+    const A = [
+        [1, 0, dt, 0],
+        [0, 1, 0, dt],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ];
+    
+    // B (Control Matrix - CORRECTED for u being Delta V = a*dt)
+    // Position change: 0.5 * a * dt^2 = 0.5 * (u/dt) * dt^2 = 0.5 * u * dt
+    // Velocity change: a * dt = u
+    const B = [
+        [0.5 * dt, 0],
+        [0, 0.5 * dt],
+        [1, 0],
+        [0, 1]
+    ];
+    
+    const Q_process = Q_PROCESS_NOISE; 
+    const R_measurement = R_MEASUREMENT_NOISE;
+
+
+    // --- Prediction Step (Time Update) ---
+
+    // Predicted State (x_hat_t_minus): x_t^- = A * x_t-1 + B * u_t
+    const A_x_prev = matrixMultiply(A, x_prev);
+    const B_u = matrixMultiply(B, u);
+    const xHat = matrixAdd(A_x_prev, B_u); // Predicted State
+
+    // Predicted Covariance (Sigma_hat_t_minus): Sigma_t^- = A * Sigma_t-1 * A^T + Q
+    const A_T = matrixTranspose(A);
+    const A_Sigma_prev = matrixMultiply(A, Sigma_prev);
+    const A_Sigma_prev_A_T = matrixMultiply(A_Sigma_prev, A_T);
+    const SigmaHat = matrixAdd(A_Sigma_prev_A_T, Q_process); // Predicted Covariance
+
+
+    // --- Update Step (Measurement Update) ---
+
+    // 1. Innovation (Measurement Residual): y = z_t - H * x_t^-
+    const H_xHat = matrixMultiply(H, xHat);
+    const y = matrixSubtract(z, H_xHat);
+
+    // 2. Innovation Covariance: S = H * Sigma_t^- * H^T + R
+    const H_SigmaHat = matrixMultiply(H, SigmaHat);
+    const H_SigmaHat_H_T = matrixMultiply(H_SigmaHat, H_T);
+    const S = matrixAdd(H_SigmaHat_H_T, R_measurement);
+    
+    // 3. Kalman Gain: K_t = Sigma_t^- * H^T * S^-1
+    let S_inv;
+    try {
+        S_inv = matrixInverse2x2(S); 
+    } catch(e) {
+        console.error("Error inverting S matrix (Singular). Returning predicted state only.", e);
+        return { x: xHat, Sigma: SigmaHat, xHat, SigmaHat };
+    }
+    
+    const SigmaHat_H_T = matrixMultiply(SigmaHat, H_T);
+    const K = matrixMultiply(SigmaHat_H_T, S_inv);
+
+    // 4. Updated State (Posterior): x_t = x_t^- + K_t * y
+    const K_y = matrixMultiply(K, y);
+    const x = matrixAdd(xHat, K_y);
+
+    // 5. Updated Covariance (Posterior): Sigma_t = (I - K_t * H) * Sigma_t^-
+    const I = identityMatrix(4);
+    const K_H = matrixMultiply(K, H);
+    const I_minus_K_H = matrixSubtract(I, K_H);
+    const Sigma = matrixMultiply(I_minus_K_H, SigmaHat);
+
+    return { x, Sigma, xHat, SigmaHat };
+};
+
+
+// --- Simulation Control (Same as before) ---
+
+let currentState = initial_x;
+let currentSigma = initial_sigma;
+const resultsDiv = document.getElementById('results');
+const runButton = document.getElementById('runFilter');
+const resetButton = document.getElementById('resetFilter');
+
+/**
+ * Runs the full Kalman Filter simulation.
+ */
+const runSimulation = () => {
+    // Reset to initial state
+    currentState = JSON.parse(JSON.stringify(initial_x));
+    currentSigma = JSON.parse(JSON.stringify(initial_sigma));
+    resultsDiv.innerHTML = `<h3 class="text-xl font-medium mb-4 text-green-700">Results for Full Kalman Filter (Prediction + Update)</h3>`;
+
+    DATA.forEach((data, index) => {
+        const result = kalmanStep(currentState, currentSigma, data);
+        
+        // Output results
+        resultsDiv.innerHTML += createStepHTML(index + 1, result.xHat, result.SigmaHat, result.x, result.Sigma);
+
+        // Update state for next step
+        currentState = result.x;
+        currentSigma = result.Sigma;
+    });
+
+    // Re-render math after DOM update
+    if (window.MathJax) {
+        MathJax.typesetPromise([resultsDiv]).catch((err) => console.log('MathJax error:', err));
+    }
+};
+
+runButton.addEventListener('click', () => {
+    runSimulation(); 
+});
+
+resetButton.addEventListener('click', () => {
+    resultsDiv.innerHTML = `<h3 class="text-xl font-medium text-red-600">Click "Run Full Kalman Filter Simulation" to start the calculation.</h3>`;
+    currentState = JSON.parse(JSON.stringify(initial_x));
+    currentSigma = JSON.parse(JSON.stringify(initial_sigma));
+});
+
+
+// Initial call to set up MathJax for the derivation part
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.MathJax) {
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+        MathJax.typesetPromise().catch((err) => console.log('MathJax error on load:', err));
+    } else {
+        console.warn("MathJax not found. Equations will not render properly.");
+    }
+});
+
+</script>
+
+<!-- MathJax CDN for rendering LaTeX equations -->
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</body>
+</html>

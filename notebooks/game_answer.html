@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate-50 */
+            color: #1e293b; /* Slate-800 */
+        }
+        .container-box {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .math-block {
+            /* Using Courier or monospace for equation readability */
+            font-family: monospace, Courier, sans-serif;
+            font-size: 1em;
+            overflow-x: auto;
+            padding: 1rem;
+            background-color: #f1f5f9; /* Slate-100 */
+            border-radius: 6px;
+            margin: 1rem 0;
+            line-height: 1.8;
+            white-space: pre-wrap; /* Preserve formatting and wrap long lines */
+        }
+        .state-diagram-container {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #f1f5f9; /* Slate-100 */
+            border-radius: 8px;
+        }
+        .step-card {
+            background-color: #e2e8f0; /* Slate-200 */
+            border-left: 4px solid #3b82f6; /* Blue-500 */
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-box">
+
+        <!-- Problem Description and Diagram -->
+        <div class="mb-6 border-b pb-4">
+            <h2 class="text-xl font-semibold mb-3">Problem Setup</h2>
+            <p class="text-sm italic mb-4">
+                We assume two states, X = {hit, miss}, and the **prior probability** for each state is:
+                P(hit<sub>t-1</sub>) = P(miss<sub>t-1</sub>) = 0.5.
+            </p>
+
+            <h3 class="text-lg font-medium mb-2">Transition Probabilities P(x<sub>t</sub> | x<sub>t-1</sub>, u)</h3>
+            
+            <!-- Custom SVG/HTML rendering of the diagram for visualization -->
+            <div class="state-diagram-container">
+                <svg width="350" height="200" viewBox="0 0 350 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Styles -->
+                    <defs>
+                        <style>
+                            .prob-node { fill: #f8fafc; stroke: #3b82f6; stroke-width: 2px; }
+                            .prob-text { font: 14px sans-serif; font-weight: 600; text-anchor: middle; fill: #1e293b; }
+                            .prob-label { font: 14px bold sans-serif; fill: #ef4444; }
+                            .prob-arrow { stroke: #1e293b; stroke-width: 1.5px; fill: none; marker-end: url(#arrowhead); }
+                        </style>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#1e293b" />
+                        </marker>
+                    </defs>
+
+                    <!-- Hit Node (State 1) -->
+                    <ellipse class="prob-node" cx="80" cy="100" rx="40" ry="20" />
+                    <text class="prob-text" x="80" y="105">hit</text>
+
+                    <!-- Miss Node (State 2) -->
+                    <ellipse class="prob-node" cx="270" cy="100" rx="40" ry="20" />
+                    <text class="prob-text" x="270" y="105">miss</text>
+
+                    <!-- Transitions -->
+
+                    <!-- hit -> miss (0.3) -->
+                    <path class="prob-arrow" d="M120 90 C 150 40, 200 40, 230 90" />
+                    <text class="prob-label" x="175" y="45">0.3</text>
+                    
+                    <!-- miss -> hit (0.7) -->
+                    <path class="prob-arrow" d="M230 110 C 200 160, 150 160, 120 110" />
+                    <text class="prob-label" x="175" y="165">0.7</text>
+
+                    <!-- hit -> hit (0.7 - Loop Left) -->
+                    <path class="prob-arrow" d="M40 100 C 0 80, 0 120, 40 100" />
+                    <text class="prob-label" x="20" y="80">0.7</text>
+
+                    <!-- miss -> miss (0.3 - Loop Right) -->
+                    <path class="prob-arrow" d="M310 100 C 350 80, 350 120, 310 100" />
+                    <text class="prob-label" x="330" y="80">0.3</text>
+                </svg>
+            </div>
+            [Image of State transition diagram for a Markov process]
+
+            <!-- Transition Probabilities extracted from the diagram -->
+            <ul class="list-disc list-inside text-sm text-slate-700 ml-4 mt-2">
+                <li>P(hit<sub>t</sub> | hit<sub>t-1</sub>, u) = 0.7</li>
+                <li>P(miss<sub>t</sub> | hit<sub>t-1</sub>, u) = 0.3</li>
+                <li>P(hit<sub>t</sub> | miss<sub>t-1</sub>, u) = 0.7</li>
+                <li>P(miss<sub>t</sub> | miss<sub>t-1</sub>, u) = 0.3</li>
+            </ul>
+        </div>
+
+        <!-- Solution -->
+        <h2 class="text-2xl font-bold mb-4 text-blue-600">Solution: Prediction Step</h2>
+
+        <div class="math-block">
+            The general formula for the prediction step (Law of Total Probability) is:
+            <pre>
+Bel'(x<sub>t</sub>) = Sum over x<sub>t-1</sub> [ P(x<sub>t</sub> | x<sub>t-1</sub>, u) &middot; Bel(x<sub>t-1</sub>) ]
+            </pre>
+            Where Bel(x<sub>t-1</sub>) is the prior probability, P(x<sub>t-1</sub>).
+        </div>
+
+        <!-- Calculation for P(hit | u) -->
+        <div class="step-card">
+            <h3 class="text-lg font-semibold mb-2">1. Calculate P(hit | u)</h3>
+            <p>We calculate the probability that the final state is 'hit' given the action u (throw):</p>
+            <div class="math-block">
+                <pre>
+P(hit<sub>t</sub> | u) = P(hit<sub>t</sub> | hit<sub>t-1</sub>, u) &middot; P(hit<sub>t-1</sub>) + P(hit<sub>t</sub> | miss<sub>t-1</sub>, u) &middot; P(miss<sub>t-1</sub>)
+P(hit<sub>t</sub> | u) = (0.7) &middot; (0.5) + (0.7) &middot; (0.5)
+P(hit<sub>t</sub> | u) = 0.35 + 0.35
+P(hit<sub>t</sub> | u) = <b>0.7</b>
+                </pre>
+            </div>
+        </div>
+
+        <!-- Calculation for P(miss | u) -->
+        <div class="step-card">
+            <h3 class="text-lg font-semibold mb-2">2. Calculate P(miss | u)</h3>
+            <p>We calculate the probability that the final state is 'miss' given the action u (throw):</p>
+            <div class="math-block">
+                <pre>
+P(miss<sub>t</sub> | u) = P(miss<sub>t</sub> | hit<sub>t-1</sub>, u) &middot; P(hit<sub>t-1</sub>) + P(miss<sub>t</sub> | miss<sub>t-1</sub>, u) &middot; P(miss<sub>t-1</sub>)
+P(miss<sub>t</sub> | u) = (0.3) &middot; (0.5) + (0.3) &middot; (0.5)
+P(miss<sub>t</sub> | u) = 0.15 + 0.15
+P(miss<sub>t</sub> | u) = <b>0.3</b>
+                </pre>
+            </div>
+        </div>
+
+        <div class="mt-8 p-4 bg-blue-500 rounded-lg text-white text-center font-bold text-xl">
+            <p>The resulting beliefs after the action u (throw) are:</p>
+            <p>P(hit | u) = 0.7</p>
+            <p>P(miss | u) = 0.3</p>
+        </div>
+
+    </div>
+</body>
+</html>

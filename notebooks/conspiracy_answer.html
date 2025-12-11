@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load MathJax for rendering LaTeX equations -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#1D4ED8', // Blue 700
+                        'secondary': '#FBBF24', // Amber 400
+                        'accent': '#DC2626', // Red 600
+                        'bg-light': '#F9FAFB',
+                        'card-bg': '#FFFFFF',
+                    }
+                }
+            }
+        }
+        // MathJax configuration to handle LaTeX in custom delimiters (optional, but good practice)
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <style>
+        .math-block {
+            padding: 1rem;
+            border-left: 4px solid var(--tw-border-opacity);
+            --tw-border-opacity: 1;
+            border-color: #3B82F6; /* Blue 500 */
+            background-color: #EFF6FF; /* Blue 50 */
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-bg-light min-h-screen p-4 sm:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto bg-card-bg shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-100">
+
+        <header class="mb-8 border-b pb-4">
+        </header>
+
+        <!-- Introduction -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">The Problem with Conspiracy Logic</h2>
+            <p class="text-gray-700 leading-relaxed">
+                The exercise highlights a key characteristic of unscientific reasoning: self-sealing logic, where any outcome—affirmation ($E$) or denial ($\lnot E$)—is taken as evidence of the hypothesis ($H$). Bayesian probability theory provides a rigorous framework showing why this is mathematically impossible.
+            </p>
+        </section>
+
+        <!-- Section 1: Defining Confirmation -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">1. Defining Confirmation (Evidence in Favor)</h2>
+            <p class="text-gray-700 mb-4">
+                In Bayesian inference, an observation is evidence in favor of a hypothesis ($H$) if the posterior probability $P(H|\text{Observation})$ is strictly greater than the prior probability $P(H)$.
+            </p>
+
+            <div class="math-block">
+                <p class="text-sm font-medium text-blue-800">Condition 1: $E$ is evidence in favor of $H$ if:</p>
+                $$\\P(H|E) > P(H)$$
+            </div>
+            <div class="math-block">
+                <p class="text-sm font-medium text-blue-800">Condition 2: $\lnot E$ is evidence in favor of $H$ if:</p>
+                $$\\P(H|\lnot E) > P(H)$$
+            </div>
+            <p class="text-gray-700 mt-4">
+                We assume both Condition 1 and Condition 2 are true, and then show this leads to a contradiction.
+            </p>
+        </section>
+
+        <!-- Section 2: The Law of Total Probability -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">2. The Law of Total Probability</h2>
+            <p class="text-gray-700 mb-4">
+                The prior probability of $H$ must be the weighted sum of its conditional probabilities, weighted by the probability of the condition itself. This fundamental law is always true for complementary events $E$ and $\lnot E$.
+            </p>
+            <div class="math-block">
+                $$\\P(H) = P(H|E) P(E) + P(H|\lnot E) P(\lnot E)$$
+            </div>
+        </section>
+
+        <!-- Section 3: Proof by Contradiction -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">3. Proof by Contradiction</h2>
+            <p class="text-gray-700 mb-4">
+                Based on our assumption (both conditions are true), we define $\delta_1$ and $\delta_2$ as the positive increases in probability:
+            </p>
+
+            <div class="math-block text-center">
+                $$\\P(H|E) = P(H) + \delta_1 \quad (\delta_1 > 0)$$
+                $$\\P(H|\lnot E) = P(H) + \delta_2 \quad (\delta_2 > 0)$$
+            </div>
+
+            <p class="text-gray-700 mt-4">
+                Now, substitute these expressions back into the Law of Total Probability:
+            </p>
+
+            <div class="math-block">
+                $$P(H) = [P(H) + \delta_1] P(E) + [P(H) + \delta_2] P(\lnot E)$$
+                $$P(H) = P(H) P(E) + \delta_1 P(E) + P(H) P(\lnot E) + \delta_2 P(\lnot E)$$
+                $$P(H) = P(H) [P(E) + P(\lnot E)] + \delta_1 P(E) + \delta_2 P(\lnot E)$$
+            </div>
+            
+            <p class="text-gray-700 mt-4">
+                Since $P(E) + P(\lnot E) = 1$, we simplify the equation:
+            </p>
+
+            <div class="math-block">
+                $$P(H) = P(H) (1) + \delta_1 P(E) + \delta_2 P(\lnot E)$$
+                $$P(H) = P(H) + \delta_1 P(E) + \delta_2 P(\lnot E)$$
+            </div>
+
+            <p class="text-gray-700 mt-4">
+                Subtracting $P(H)$ from both sides yields the final contradiction:
+            </p>
+            <div class="math-block bg-red-100 border-red-500">
+                $$\\0 = \delta_1 P(E) + \delta_2 P(\lnot E)$$
+            </div>
+        </section>
+
+        <!-- Section 4: Conclusion -->
+        <section>
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">4. Conclusion</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                Since all probabilities ($P(E), P(\lnot E)$) must be positive, and we assumed $\delta_1$ and $\delta_2$ are strictly positive (evidence in favor), their sum must also be strictly positive:
+            </p>
+            <div class="math-block bg-green-100 border-green-500">
+                $$\delta_1 P(E) + \delta_2 P(\lnot E) > 0$$
+            </div>
+            <p class="text-xl font-bold text-accent mt-6">
+                Contradiction: A positive quantity cannot equal zero.
+            </p>
+            <p class="text-gray-700 mt-4 leading-relaxed">
+                Therefore, the initial assumption that both $E$ and $\lnot E$ can simultaneously increase the probability of $H$ is mathematically impossible within the framework of Bayesian probability theory. If one outcome raises your belief in the hypothesis, the other *must* lower or maintain it.
+            </p>
+        </section>
+
+    </div>
+
+</body>
+</html>

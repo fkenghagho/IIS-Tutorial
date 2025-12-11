@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
+    <!-- Load MathJax for rendering LaTeX equations -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'red-roulette': '#DC2626', // Red 600
+                        'black-roulette': '#1F2937', // Gray 800
+                        'green-roulette': '#059669', // Emerald 600
+                        'primary': '#1D4ED8', // Blue 700
+                        'bg-light': '#F9FAFB',
+                        'card-bg': '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .step-card {
+            background-color: #EFF6FF; /* Blue 50 */
+            border-left: 4px solid #1D4ED8; /* Primary Blue */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .math-block {
+            padding: 0.75rem;
+            background-color: #ECFDF5; /* Green 50 */
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-bg-light min-h-screen p-4 sm:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto bg-card-bg shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-100">
+
+        <header class="mb-8 border-b pb-4">
+            <p class="text-lg text-gray-600">
+                Determining the probability of the next spin's outcome, given 50 previous red results.
+            </p>
+        </header>
+
+    
+
+        <!-- Analysis and Assumptions -->
+        <section class="mb-8">
+
+            <div class="step-card">
+                <h3 class="font-bold text-lg text-primary mb-2">IID Assumption: Independent Identically Distributed Events</h3>
+                <p class="text-gray-700">
+                    The crucial assumption in standard probability models for gambling is that each spin of the roulette wheel is a statistically independent event. This means the outcome of any previous spin (e.g., the 50 consecutive red results) has absolutely no physical or mathematical influence on the outcome of the next spin (spin 51).
+                </p>
+                <p class="text-sm font-semibold mt-2 text-primary">
+                    <span class="font-extrabold">Theorem Used:</span> Definition of Independent Identically Distributed Events.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Final Probabilities -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-3">Final Probabilities for Spin 51</h2>
+            
+            <p class="text-gray-700 mb-4">
+                The probabilities for the $$51^{st}$$ spin remain unchanged:
+            </p>
+
+            <div class="space-y-4">
+                <div class="bg-red-50 p-4 border border-red-200 rounded-lg shadow-sm">
+                    <h4 class="text-xl font-bold text-red-roulette mb-2">Red</h4>
+                    <div class="math-block bg-red-100 border-red-500 text-black-roulette">
+                        $$\\ P(C_{51}=\text{red}) = \frac{18}{37} \approx 48.65\%$$
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-sm">
+                    <h4 class="text-xl font-bold text-black-roulette mb-2">Black</h4>
+                    <div class="math-block bg-gray-200 border-gray-500 text-black-roulette">
+                        $$\\ P(C_{51}=\text{black}) = \frac{18}{37} \approx 48.65\%$$
+                    </div>
+                </div>
+
+                <div class="bg-green-50 p-4 border border-green-200 rounded-lg shadow-sm">
+                    <h4 class="text-xl font-bold text-green-roulette mb-2">Green</h4>
+                    <div class="math-block bg-green-100 border-green-500 text-black-roulette">
+                        $$\\ P(C_{51}=\text{green}) = \frac{1}{37} \approx 2.70\%$$
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Post-Analysis Note -->
+        <section class="mt-8 pt-4 border-t border-gray-200">
+            <h3 class="text-xl font-semibold text-primary mb-2">Note on Real-World Context</h3>
+            <p class="text-gray-700 leading-relaxed italic">
+                A real-world probability analysis might consider the possibility of a non-standard or 'loaded' wheel, where 50 consecutive reds would drastically change the model parameters (using the Bayes Theorem to update the belief in the wheel's fairness). However, in this specific case, the assumption of independence is required and leads to the result above.
+            </p>
+        </section>
+
+    </div>
+
+</body>
+</html>

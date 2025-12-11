@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load MathJax for rendering LaTeX equations -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#059669', // Emerald 600
+                        'secondary': '#FBBF24', // Amber 400
+                        'bg-light': '#F0FDF4', // Emerald 50
+                        'card-bg': '#FFFFFF',
+                        'accent': '#1D4ED8', // Blue 700
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .solution-block {
+            padding: 1rem;
+            border-left: 4px solid var(--tw-border-opacity);
+            --tw-border-opacity: 1;
+            border-color: #059669; /* Primary color */
+            background-color: #ECFDF5; /* Lighter shade for block */
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+        .math-display {
+            overflow-x: auto; /* Ensures horizontal scroll on small screens for long formulas */
+        }
+    </style>
+</head>
+<body class="bg-bg-light min-h-screen p-4 sm:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto bg-card-bg shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-200">
+
+        <header class="mb-8 border-b pb-4">
+            <p class="text-lg text-gray-600">
+                Analysis of 5-card poker hand probabilities using combinatorial methods.
+            </p>
+        </header>
+
+        <!-- Total Atomic Events -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">
+                1. Number of Atomic Events (Total Combinations)
+            </h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                The number of different combinations of five cards that can be drawn from a standard 52-card deck is given by the binomial coefficient (or "52 choose 5"), which represents the total number of possible 5-card hands. This is the size of the joint probability distribution space.
+            </p>
+
+            <div class="solution-block">
+                <p class="text-base font-medium text-gray-700 mb-2">Formula for Combinations:</p>
+                <div class="math-display">
+                    $$\\ \text{Total Hands} = \binom{n}{k} = \binom{52}{5} = \frac{52!}{5!(52-5)!} = \frac{52 \times 51 \times 50 \times 49 \times 48}{5 \times 4 \times 3 \times 2 \times 1}$$
+                </div>
+                <p class="text-base font-medium text-gray-700 mt-4">Result:</p>
+                <p class="text-2xl font-bold text-accent">$$2,598,960 \quad \text{atomic events}$$</p>
+            </div>
+            <p class="text-gray-700 mt-4">
+                There are 2,598,960 unique 5-card hands possible.
+            </p>
+        </section>
+
+        <!-- Probability of Single Atomic Event -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">
+                2. Probability of a Single Atomic Event
+            </h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                Since all hands are equally likely (assuming an honest dealer), the probability of any single, specific 5-card hand (an atomic event) is the reciprocal of the total number of hands.
+            </p>
+
+            <div class="solution-block">
+                <p class="text-base font-medium text-gray-700 mb-2">Calculation:</p>
+                <div class="math-display">
+                    $$\\ P(\text{Atomic Event}) = \frac{1}{\text{Total Hands}} = \frac{1}{2,598,960}$$
+                </div>
+                <p class="text-base font-medium text-gray-700 mt-4">Approximate Value:</p>
+                <p class="text-2xl font-bold text-accent">$$\approx 0.0000003848$$</p>
+            </div>
+        </section>
+
+        <!-- Probability of a Royal Straight Flush -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">
+                3. Probability of a Royal Straight Flush (A, K, Q, J, 10 of same suit)
+            </h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                A Royal Straight Flush is defined by five specific ranks (A, K, Q, J, 10) and one specific suit.
+            </p>
+            <ul class="list-disc list-inside text-gray-700 ml-4 mb-4">
+                <li>There are 4 suits (Spades, Hearts, Diamonds, Clubs).</li>
+                <li>In each suit, there is only 1 possible Royal Straight Flush (e.g., A♠, K♠, Q♠, J♠, 10♠).</li>
+                <li>Total number of Royal Straight Flushes = 4.</li>
+            </ul>
+
+            <div class="solution-block">
+                <p class="text-base font-medium text-gray-700 mb-2">Calculation:</p>
+                <div class="math-display">
+                    $$\\ P(\text{Royal Straight Flush}) = \frac{\text{Number of Royal Flushes}}{\text{Total Hands}} = \frac{4}{2,598,960}$$
+                </div>
+                <p class="text-base font-medium text-gray-700 mt-4">Result:</p>
+                <p class="text-2xl font-bold text-accent">$$\approx 0.000001539 \quad \text{or} \quad 1 \text{ in } 649,740$$</p>
+            </div>
+        </section>
+
+        <!-- Probability of Four of a Kind -->
+        <section>
+            <h2 class="text-2xl font-semibold text-primary mb-4 border-b pb-2">
+                4. Probability of Four Equal Cards (Four of a Kind)
+            </h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                A Four of a Kind hand consists of four cards of the same rank (e.g., four Queens) and one fifth card (the kicker).
+            </p>
+            <ul class="list-disc list-inside text-gray-700 ml-4 mb-4">
+                <li>Step 1: Choose the rank for the four equal cards. There are $\binom{13}{1} = 13$ possible ranks (2 through A).</li>
+                <li>Step 2: Choose the four cards of that rank. Since all four cards of that rank are required (e.g., all four Queens), there is only $\binom{4}{4} = 1$ way to choose them.</li>
+                <li>Step 3: Choose the kicker (the fifth card). The kicker can be any of the remaining $52 - 4 = 48$ cards.</li>
+            </ul>
+
+            <div class="solution-block">
+                <p class="text-base font-medium text-gray-700 mb-2">Total number of Four of a Kind hands:</p>
+                <div class="math-display">
+                    $$\\ \text{Four of a Kind Hands} = \binom{13}{1} \times \binom{4}{4} \times \binom{48}{1} = 13 \times 1 \times 48 = 624$$
+                </div>
+                <p class="text-base font-medium text-gray-700 mt-4">Probability Calculation:</p>
+                <div class="math-display">
+                    $$\\ P(\text{Four of a Kind}) = \frac{\text{Number of Four of a Kind Hands}}{\text{Total Hands}} = \frac{624}{2,598,960}$$
+                </div>
+                <p class="text-base font-medium text-gray-700 mt-4">Result:</p>
+                <p class="text-2xl font-bold text-accent">$$\approx 0.0002401 \quad \text{or} \quad 1 \text{ in } 4,165$$</p>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

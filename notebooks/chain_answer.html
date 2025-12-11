@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Image Display</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font and ensure full height for centering */
+        body {
+            font-family: "Inter", sans-serif;
+            min-height: 1000px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-3xl w-full text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Markov Chain: A Model of the Urn's State Evolution</h1>
+        
+        <!-- Image Container -->
+        <div class="border-4 border-indigo-500 rounded-lg overflow-hidden p-1">
+            <!-- 
+                Using a placeholder image URL. 
+                Replace the 'src' attribute below with your desired image link.
+            -->
+            <img 
+                width=1000px
+                height=1000px
+                src="https://raw.githubusercontent.com/fkenghagho/IIS-Tutorial/main/notebooks/imgs/chain.png" 
+                alt="A beautiful placeholder image for demonstration" 
+                class="w-full h-auto object-cover rounded-lg shadow-lg transition-transform duration-300 hover:scale-[1.01]"
+                onerror="this.onerror=null; this.src='https://placehold.co/600x400/EF4444/ffffff?text=Image+Not+Found';"
+            >
+        </div>
+
+        <p class="mt-4 text-sm text-gray-500">
+            The chain describes the probabilistic evolution of the urn's state.
+        </p>
+    </div>
+</body>
+</html>

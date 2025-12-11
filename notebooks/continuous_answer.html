@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate-50 */
+            color: #1e293b; /* Slate-800 */
+        }
+        .container-box {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .math-block {
+            font-family: monospace, Courier, sans-serif;
+            font-size: 1em;
+            overflow-x: auto;
+            padding: 1rem;
+            background-color: #f1f5f9; /* Slate-100 */
+            border-radius: 6px;
+            margin: 1rem 0;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        .section-card {
+            background-color: #eef2ff; /* Indigo-50 */
+            border-left: 4px solid #4f46e5; /* Indigo-600 */
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 6px;
+        }
+        .answer {
+            color: #10b981; /* Emerald-500 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-box">
+
+        <div class="mb-6 pb-4 border-b">
+            <h2 class="text-xl font-semibold mb-3">Given Probability Density Function (PDF)</h2>
+            <div class="math-block">
+                f(x) = c * x<sup>4</sup>, for 4 &le; x &le; 6
+                <br>f(x) = 0, otherwise
+            </div>
+        </div>
+
+        <!-- Part 1: Determine c -->
+        <div class="section-card">
+            <h2 class="text-2xl font-bold mb-3 text-indigo-600">Part 1: Determine the constant c</h2>
+            <p class="mb-2">For f(x) to be a valid PDF, the total area under the curve must equal 1.</p>
+            <p class="mb-4">Integral of f(x) from -&infin; to +&infin; = 1</p>
+
+            <div class="math-block">
+                <pre>
+&int;<sub>-&infin;</sub><sup>+&infin;</sup> f(x) dx = 1
+
+Since f(x) is non-zero only for 4 &le; x &le; 6:
+
+&int;<sub>4</sub><sup>6</sup> c * x<sup>4</sup> dx = 1
+
+c * &int;<sub>4</sub><sup>6</sup> x<sup>4</sup> dx = 1
+
+c * [ (x<sup>5</sup>) / 5 ]<sub>4</sub><sup>6</sup> = 1
+
+c * [ (6<sup>5</sup>) / 5 - (4<sup>5</sup>) / 5 ] = 1
+
+c * [ (7776) / 5 - (1024) / 5 ] = 1
+
+c * [ (7776 - 1024) / 5 ] = 1
+
+c * (6752 / 5) = 1
+
+c = <b>5 / 6752</b>
+                </pre>
+            </div>
+            <p class="text-lg mt-4">
+                The constant c is: <span class="answer">c = 5 / 6752</span>
+            </p>
+        </div>
+
+        <!-- Part 2: Determine P(X > 5) -->
+        <div class="section-card">
+            <h2 class="text-2xl font-bold mb-3 text-indigo-600">Part 2: Determine P(X > 5)</h2>
+            <p class="mb-4">This is the probability that X falls between 5 and 6, calculated by integrating the PDF over this range.</p>
+
+            <div class="math-block">
+                <pre>
+P(X > 5) = &int;<sub>5</sub><sup>6</sup> f(x) dx
+P(X > 5) = &int;<sub>5</sub><sup>6</sup> (5 / 6752) * x<sup>4</sup> dx
+
+P(X > 5) = (5 / 6752) * &int;<sub>5</sub><sup>6</sup> x<sup>4</sup> dx
+
+P(X > 5) = (5 / 6752) * [ (x<sup>5</sup>) / 5 ]<sub>5</sub><sup>6</sup>
+
+P(X > 5) = (5 / 6752) * [ (6<sup>5</sup>) / 5 - (5<sup>5</sup>) / 5 ]
+
+P(X > 5) = (1 / 6752) * [ 6<sup>5</sup> - 5<sup>5</sup> ]
+
+P(X > 5) = (1 / 6752) * [ 7776 - 3125 ]
+
+P(X > 5) = <b>4651 / 6752</b>
+                </pre>
+            </div>
+            <p class="text-lg mt-4">
+                The probability P(X > 5) is: <span class="answer">4651 / 6752</span>
+                (Approximate decimal: &asymp; 0.6888)
+            </p>
+        </div>
+
+        <!-- Part 3: Determine P(X = 5) -->
+        <div class="section-card">
+            <h2 class="text-2xl font-bold mb-3 text-indigo-600">Part 3: Determine P(X = 5)</h2>
+            <p class="mb-4">For any continuous random variable, the probability of the variable taking on a single, exact value is always zero.</p>
+
+            <div class="math-block">
+                <pre>
+P(X = a) = &int;<sub>a</sub><sup>a</sup> f(x) dx
+
+P(X = 5) = &int;<sub>5</sub><sup>5</sup> f(x) dx = 0
+                </pre>
+            </div>
+            <p class="text-lg mt-4">
+                The probability P(X = 5) is: <span class="answer">0</span>
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
