@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 6 Quiz: Action Execution</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and a smooth appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .quiz-card {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        /* Styles for correct/incorrect borders on selection */
+        select.correct {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 1px #10b981;
+        }
+        select.incorrect {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Style for mathematical variables (makes them italic) */
+        .math-var { font-style: italic; } 
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'robot-blue': '#1c4d96',
+                        'robot-green': '#10b981',
+                        'robot-red': '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div id="app" class="min-h-screen p-4 sm:p-8 flex justify-center items-start">
+    <div class="w-full max-w-4xl bg-white p-6 sm:p-10 rounded-xl quiz-card mt-8">
+        <p class="text-lg text-gray-600 mb-8">Test your knowledge on coordinate transformations, motion planning principles, and trajectory following using PID control. You must answer all 9 questions before checking your results.</p>
+
+        <div id="quiz-container">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <button 
+            id="action-button" 
+            onclick="handleAction()"
+            class="w-full mt-8 px-6 py-3 bg-robot-blue text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-robot-blue/50 disabled-button"
+            disabled
+        >
+            Check Answers (0/9 Completed)
+        </button>
+        
+        <div id="status-message" class="mt-4 text-center text-robot-red font-medium hidden">
+            Please answer all 9 questions before checking your results.
+        </div>
+
+        <div id="results" class="mt-8 pt-6 border-t border-gray-200 hidden">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Your Results:</h2>
+            <p id="score-display" class="text-xl font-bold text-gray-800">Score: 0 / 9</p>
+            <p id="feedback-message" class="mt-2 text-lg"></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const QUIZ_LENGTH = 9;
+    let quizChecked = false; // State to track if the quiz has been checked
+
+    // Define the quiz data structure with 9 questions based on Module 6
+    const quizData = [
+        // --- M6_1.pdf: Transformations and Reference Frames (3 Questions) ---
+        { id: 1, concept: "Homogeneous Transformation Matrix (HTM)", 
+            question: "What is the primary function of a Homogeneous Transformation Matrix (<span class='math-var'>T</span>) in robotics?", 
+            options: [
+                { text: "To define the mass and inertia of a link", isCorrect: false }, 
+                { text: "To represent only the rotation between two coordinate frames", isCorrect: false }, 
+                { text: "To represent both rotation and translation in a single matrix", isCorrect: true }, 
+                { text: "To calculate the inverse kinematics solution", isCorrect: false }
+            ] },
+        { id: 2, concept: "Rotation Representation", 
+            question: "Which rotation representation is often used in ROS messages, is more compact than rotation matrices, and avoids gimbal lock?", 
+            options: [
+                { text: "Euler Angles (Roll, Pitch, Yaw)", isCorrect: false }, 
+                { text: "Rotation Matrix (9 elements)", isCorrect: false }, 
+                { text: "Quaternion", isCorrect: true }, 
+                { text: "Axis-Angle", isCorrect: false }
+            ] },
+        { id: 3, concept: "KDL Library Functionality", 
+            question: "What specific kinematics task can the Kinematics and Dynamics Library (KDL) perform using a robot's URDF file?", 
+            options: [
+                { text: "Trajectory Smoothing", isCorrect: false }, 
+                { text: "Homogeneous Transformation magic", isCorrect: false }, 
+                { text: "Forwards kinematics", isCorrect: true }, 
+                { text: "Inverse Dynamics", isCorrect: false }
+            ] },
+
+        // --- M6_2.pdf: Motion Planning (3 Questions) ---
+        { id: 4, concept: "Configuration Space (C-Space)", 
+            question: "What does the Configuration Space (<span class='math-var'>\mathcal{C}</span>) of a robot primarily represent?", 
+            options: [
+                { text: "The Cartesian (x, y, z) position of the end-effector", isCorrect: false }, 
+                { text: "All possible joint positions and orientations of the robot", isCorrect: true }, 
+                { text: "The set of obstacle locations in the environment", isCorrect: false }, 
+                { text: "The available torque range for each joint", isCorrect: false }
+            ] },
+        { id: 5, concept: "Rapidly-exploring Random Trees (RRT)", 
+            question: "In the simple RRT algorithm, which two components are primarily used in each step to extend the tree?", 
+            options: [
+                { text: "The goal configuration and the nearest vertex", isCorrect: false }, 
+                { text: "The entire obstacle set and the starting configuration", isCorrect: false }, 
+                { text: "A new random configuration and the nearest existing vertex", isCorrect: true }, 
+                { text: "The previous state and the current control input", isCorrect: false }
+            ] },
+        { id: 6, concept: "Collision-Free Space", 
+            question: "In motion planning, the subset of <span class='math-var'>\mathcal{C}</span>-Space where the robot is free of collisions is denoted as:", 
+            options: [
+                { text: "<span class='math-var'>\mathcal{C}_{all}</span>", isCorrect: false }, 
+                { text: "<span class='math-var'>\mathcal{C}_{obs}</span> (Obstacle Space)", isCorrect: false }, 
+                { text: "<span class='math-var'>\mathcal{C}_{free}</span> (Free Space)", isCorrect: true }, 
+                { text: "<span class='math-var'>\mathcal{C}_{task}</span> (Task Space)", isCorrect: false }
+            ] },
+
+        // --- M6_3.pdf: Trajectory Following and Control (3 Questions) ---
+        { id: 7, concept: "P-Controller Drawback", 
+            question: "What is the primary drawback of using a proportional (P) controller with too large a gain (<span class='math-var'>K_p</span>) for trajectory following?", 
+            options: [
+                { text: "It cannot eliminate steady-state errors", isCorrect: false }, 
+                { text: "It makes the control signal always zero", isCorrect: false }, 
+                { text: "The control signal may oscillate or lead to instability/overshoot", isCorrect: true }, 
+                { text: "It causes the control signal to saturate at zero", isCorrect: false }
+            ] },
+        { id: 8, concept: "Integral Control Purpose", 
+            question: "The integral term in a PI or PID controller is primarily used to eliminate which type of error?", 
+            options: [
+                { text: "Instantaneous errors", isCorrect: false }, 
+                { text: "Noise in the measurement signal", isCorrect: false }, 
+                { text: "Overshoot during transient response", isCorrect: false }, 
+                { text: "Steady-state errors", isCorrect: true }
+            ] },
+        { id: 9, concept: "Derivative Control Purpose", 
+            question: "The derivative term (gain <span class='math-var'>K_d</span>) in a PID controller contributes to the control signal based on:", 
+            options: [
+                { text: "The accumulated error over time", isCorrect: false }, 
+                { text: "How fast the error changes (error velocity)", isCorrect: true }, 
+                { text: "The current magnitude of the error", isCorrect: false }, 
+                { text: "The difference between the desired and actual velocity", isCorrect: false }
+            ] }
+    ];
+
+    /**
+     * Toggles the state of the main action button based on completion.
+     */
+    function updateButtonState() {
+        const actionButton = document.getElementById('action-button');
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        let answeredCount = 0;
+        selectElements.forEach(select => {
+            if (select.value !== "") {
+                answeredCount++;
+            }
+        });
+
+        if (quizChecked) {
+            actionButton.textContent = "Reset Quiz to Try Again";
+            actionButton.classList.remove('disabled-button', 'bg-robot-blue', 'hover:bg-blue-700');
+            actionButton.classList.add('bg-robot-red', 'hover:bg-red-700', 'hover:scale-[1.01]', 'focus:ring-robot-red/50');
+            actionButton.disabled = false;
+        } else if (answeredCount === QUIZ_LENGTH) {
+            actionButton.textContent = `Check Answers (${QUIZ_LENGTH}/${QUIZ_LENGTH} Completed)`;
+            actionButton.classList.remove('disabled-button', 'bg-robot-red', 'hover:bg-red-700', 'focus:ring-robot-red/50');
+            actionButton.classList.add('bg-robot-blue', 'hover:bg-blue-700', 'hover:scale-[1.01]', 'focus:ring-robot-blue/50');
+            actionButton.disabled = false;
+            document.getElementById('status-message').classList.add('hidden');
+        } else {
+            actionButton.textContent = `Check Answers (${answeredCount}/${QUIZ_LENGTH} Completed)`;
+            actionButton.classList.remove('bg-robot-red', 'hover:bg-red-700', 'bg-robot-blue', 'hover:bg-blue-700', 'hover:scale-[1.01]');
+            actionButton.classList.add('disabled-button');
+            actionButton.disabled = true;
+            document.getElementById('status-message').classList.add('hidden');
+        }
+    }
+
+    /**
+     * Toggles between checking answers and resetting the quiz based on the state.
+     */
+    function handleAction() {
+        if (quizChecked) {
+            resetQuiz();
+        } else {
+            checkAnswers();
+        }
+    }
+
+    /**
+     * Checks the student's answers and displays results and feedback.
+     */
+    function checkAnswers() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        // 1. Mandatory: Check if all questions are answered
+        let allAnswered = true;
+        selectElements.forEach(select => {
+            if (select.value === "") {
+                allAnswered = false;
+            }
+            // Disable selections after checking
+            select.disabled = true;
+        });
+
+        if (!allAnswered) {
+            document.getElementById('status-message').classList.remove('hidden');
+            // Re-enable selections if not all answered
+            selectElements.forEach(select => {
+                 if (select.value === "") select.disabled = false;
+            });
+            return; 
+        }
+
+        // --- Execute Check ---
+        let score = 0;
+        document.getElementById('results').classList.remove('hidden');
+
+        quizData.forEach(q => {
+            const selectElement = document.getElementById(`q-${q.id}`);
+            const feedbackElement = document.getElementById(`feedback-${q.id}`);
+            
+            const selectedOptionIndex = selectElement.value;
+            // The isCorrect property is retrieved from the original quizData object
+            const isCorrect = q.options[parseInt(selectedOptionIndex)].isCorrect; 
+            const correctAnswerText = q.options.find(opt => opt.isCorrect).text;
+
+            if (isCorrect) {
+                score++;
+                feedbackElement.textContent = `Correct! (${correctAnswerText})`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-green';
+                selectElement.classList.add('correct');
+            } else {
+                feedbackElement.textContent = `Incorrect. The correct answer is: ${correctAnswerText}`;
+                feedbackElement.className = 'mt-2 font-medium text-sm text-robot-red';
+                selectElement.classList.add('incorrect');
+            }
+        });
+
+        // Display overall results
+        document.getElementById('score-display').textContent = `Score: ${score} / ${QUIZ_LENGTH}`;
+        const feedbackMessage = document.getElementById('feedback-message');
+        
+        if (score === QUIZ_LENGTH) {
+            feedbackMessage.textContent = "Perfect Score! You have a rock-solid understanding of action execution and control.";
+            feedbackMessage.className = 'mt-2 text-xl text-robot-green font-extrabold';
+        } else if (score >= QUIZ_LENGTH * 0.8) {
+            feedbackMessage.textContent = "Excellent! You have a strong grasp of the concepts.";
+            feedbackMessage.className = 'mt-2 text-lg text-green-600 font-semibold';
+        } else if (score >= QUIZ_LENGTH * 0.6) {
+            feedbackMessage.textContent = "Good attempt! You're building a solid foundation. Keep reviewing the topics.";
+            feedbackMessage.className = 'mt-2 text-lg text-yellow-600 font-semibold';
+        } else {
+            feedbackMessage.textContent = "Time for review! Take a moment to go through the provided notes to master these essential topics.";
+            feedbackMessage.className = 'mt-2 text-lg text-robot-red font-semibold';
+        }
+
+        // 3. Force reset after checking once
+        quizChecked = true;
+        updateButtonState();
+    }
+
+    /**
+     * Resets the entire quiz interface to the initial state.
+     */
+    function resetQuiz() {
+        const selectElements = document.querySelectorAll('#quiz-container select');
+        
+        selectElements.forEach(select => {
+            select.value = ""; // Clear selection
+            select.disabled = false; // Enable selection
+            select.classList.remove('correct', 'incorrect');
+            
+            const qId = select.id.split('-')[1];
+            document.getElementById(`feedback-${qId}`).textContent = '';
+        });
+
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('status-message').classList.add('hidden');
+        
+        quizChecked = false;
+        updateButtonState();
+    }
+
+
+    /**
+     * Initializes the quiz by generating the HTML for each question.
+     */
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = quizData.map((q, index) => `
+            <div class="question-block p-5 mb-6 bg-gray-50 rounded-lg border border-gray-200" data-question-id="${q.id}">
+                <label for="q-${q.id}" class="block text-lg font-semibold text-gray-800 mb-3">
+                    ${index + 1}. ${q.question}
+                </label>
+                <select 
+                    id="q-${q.id}" 
+                    onchange="updateButtonState()"
+                    class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-robot-blue focus:border-robot-blue appearance-none cursor-pointer"
+                >
+                    <option value="">-- Select your answer --</option>
+                    ${q.options.map((opt, optIndex) => `
+                        <option value="${optIndex}">${opt.text}</option>
+                    `).join('')}
+                </select>
+                <div id="feedback-${q.id}" class="mt-2 font-medium text-sm"></div>
+            </div>
+        `).join('');
+
+        updateButtonState(); // Set initial button state
+    }
+
+    // Initialize the quiz when the window loads
+    window.onload = renderQuiz;
+</script>
+</body>
+</html>

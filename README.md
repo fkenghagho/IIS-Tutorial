@@ -32,3 +32,10 @@ Click below to run the system online.
 Click below to run the system online.
 
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M05_Probabilistic_State_Estimation.ipynb)
+
+
+## 6. Going to Tutorial 6: Robot Motion Control (Concepts and Applications)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M06_Motion_Control_Tutorial.ipynb)

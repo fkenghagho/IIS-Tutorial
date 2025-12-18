@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalman Filter & Robot Self-Localization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .math-block { background: #ffffff; border-left: 4px solid #1c4d96; padding: 1.5rem; margin: 1.5rem 0; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .section-title { color: #1c4d96; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; margin-top: 2rem; font-weight: 700; }
+        code { color: #be185d; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 0.25rem; }
+    </style>
+</head>
+<body class="p-4 sm:p-10">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
+        <h1 class="text-4xl font-extrabold text-center mb-8 text-slate-800">Kalman Filter & Localization Analysis</h1>
+
+        <!-- Part 1: Equations -->
+        <h2 class="section-title text-2xl">1. The Kalman Filter Framework</h2>
+        <p class="mt-4 text-slate-600">The Kalman filter tracks the state of a system using a prediction-correction loop. The mathematical core consists of the state transition and measurement models:</p>
+        
+        <div class="math-block">
+            <p class="font-bold text-slate-700">State Transition Equation:</p>
+            <p class="text-xl text-center my-4">$$X_t = A_t X_{t-1} + B u_t + Q$$</p>
+            <p class="text-sm text-slate-500">Determines the next state $X_t$ based on the previous state and control inputs.</p>
+            
+            <p class="font-bold text-slate-700 mt-6">Measurement Equation:</p>
+            <p class="text-xl text-center my-4">$$Y_t = C_t X_t + R$$</p>
+            <p class="text-sm text-slate-500">Maps the true state $X_t$ to the observed sensor values $Y_t$.</p>
+        </div>
+
+        <h2 class="section-title text-2xl">2. Linear Motion Models</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <h3 class="font-bold text-blue-800 border-b border-blue-200 mb-2 pb-1">Constant Acceleration</h3>
+                <p class="text-sm text-blue-700 mb-2">Assuming acceleration $a$ is constant over the total duration $t$:</p>
+                <div class="space-y-2">
+                    <p class="text-lg">$$x_t = \frac{1}{2}at^2 + v_0t + x_0$$</p>
+                    <p class="text-lg">$$v_t = at + v_0$$</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                <h3 class="font-bold text-emerald-800 border-b border-emerald-200 mb-2 pb-1">Variable Acceleration</h3>
+                <p class="text-sm text-emerald-700 mb-2">Assuming acceleration is nearly constant within a small interval $\Delta t$:</p>
+                <div class="space-y-2">
+                    <p class="text-lg">$$x_t = x_{t-1} + v_{t-1}\Delta t + \frac{1}{2}a\Delta t^2$$</p>
+                    <p class="text-lg">$$v_t = v_{t-1} + a\Delta t$$</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</body>
+</html>

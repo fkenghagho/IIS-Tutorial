@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Kinematics & PID Controller Simulation</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .slider-label { display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 0.25rem; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        .math-block { background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; border-left: 4px solid #4f46e5; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Problem Statement and Equations Section -->
+        <section class="bg-white p-8 rounded-xl shadow-md mb-8">
+            <h1 class="text-3xl font-bold text-indigo-700 mb-4">Exercise: Robot Base Trajectory Tracking</h1>
+            
+            <div class="space-y-4 text-slate-700">
+                <h2 class="text-xl font-semibold text-slate-800">1. The Problem</h2>
+                <p>
+                    We want a mobile robot base to move from an initial position \(x_0\) to a target position \(x_{target}\) over a fixed time duration \(T\). 
+                    To achieve smooth motion, we must calculate the required acceleration and then use a controller to ensure the physical robot follows this "ideal" path despite disturbances or physical lag.
+                </p>
+
+                <h2 class="text-xl font-semibold text-slate-800">2. Forward & Inverse Kinematics</h2>
+                <p>In linear motion, the position at any time \(t\) is defined by the constant acceleration kinematic equation:</p>
+                <div class="math-block">
+                    \[x(t) = x_0 + v_0t + \frac{1}{2}at^2\]
+                </div>
+                <p>
+                    <strong>Forward Kinematics:</strong> Given acceleration \(a\) and initial velocity \(v_0\), we calculate the resulting trajectory \(x(t)\).<br>
+                    <strong>Inverse Kinematics:</strong> Given a desired target \(x_{target}\) at time \(T\), we solve for the required acceleration:
+                </p>
+                <div class="math-block">
+                    \[a_{req} = \frac{2(x_{target} - x_0 - v_0T)}{T^2}\]
+                </div>
+
+                <h2 class="text-xl font-semibold text-slate-800">3. The PID Controller</h2>
+                <p>
+                    The robot does not move perfectly. We define the error \(e(t)\) as the difference between the <strong>Desired</strong> position (from kinematics) and the <strong>Actual</strong> position. The PID controller calculates the control signal \(u(t)\):
+                </p>
+                <div class="math-block">
+                    \[u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}\]
+                </div>
+                <ul class="list-disc ml-6 space-y-1">
+                    <li><strong>\(K_p\) (Proportional):</strong> Corrects based on current error. High values make the robot fast but cause oscillation.</li>
+                    <li><strong>\(K_i\) (Integral):</strong> Eliminates steady-state error by summing past errors.</li>
+                    <li><strong>\(K_d\) (Derivative):</strong> Predicts future error by looking at the rate of change, acting as a "dampener" to reduce overshoot.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Interactive Simulation Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Sidebar: Controls -->
+            <div class="bg-white p-6 rounded-xl shadow-md space-y-6">
+                <div>
+                    <h2 class="text-xl font-semibold mb-4 text-indigo-600 border-b pb-2">Physics Parameters</h2>
+                    
+                    <div class="mb-4">
+                        <div class="slider-label"><span>Target \(x_{target}\) (m)</span><span id="val-target">5.0</span></div>
+                        <input type="range" id="input-target" min="1" max="10" step="0.5" value="5">
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="slider-label"><span>Initial \(v_0\) (m/s)</span><span id="val-v0">0.0</span></div>
+                        <input type="range" id="input-v0" min="-2" max="2" step="0.1" value="0">
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold mb-4 text-indigo-600 border-b pb-2">PID Gains</h2>
+                    
+                    <div class="mb-4">
+                        <div class="slider-label text-blue-600"><span>Proportional (\(K_p\))</span><span id="val-kp">10.0</span></div>
+                        <input type="range" id="input-kp" min="0" max="100" step="1" value="20">
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="slider-label text-green-600"><span>Integral (\(K_i\))</span><span id="val-ki">0.0</span></div>
+                        <input type="range" id="input-ki" min="0" max="20" step="0.1" value="0.5">
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="slider-label text-red-600"><span>Derivative (\(K_d\))</span><span id="val-kd">1.0</span></div>
+                        <input type="range" id="input-kd" min="0" max="30" step="0.5" value="5">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t">
+                    <button id="reset-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
+                        Recalculate Trajectory
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Panel: Plots -->
+            <div class="lg:col-span-2 space-y-6">
+                <div id="plot-position" class="bg-white p-4 rounded-xl shadow-md h-96"></div>
+                <div id="plot-error" class="bg-white p-4 rounded-xl shadow-md h-64"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dt = 0.01; // 10ms time step for smoother simulation
+        const duration = 5.0; 
+        const steps = Math.floor(duration / dt);
+
+        function simulate() {
+            // 1. Get Inputs
+            const targetX = parseFloat(document.getElementById('input-target').value);
+            const v0 = parseFloat(document.getElementById('input-v0').value);
+            const kp = parseFloat(document.getElementById('input-kp').value);
+            const ki = parseFloat(document.getElementById('input-ki').value);
+            const kd = parseFloat(document.getElementById('input-kd').value);
+
+            // Update Labels
+            document.getElementById('val-target').innerText = targetX.toFixed(1);
+            document.getElementById('val-v0').innerText = v0.toFixed(1);
+            document.getElementById('val-kp').innerText = kp.toFixed(1);
+            document.getElementById('val-ki').innerText = ki.toFixed(1);
+            document.getElementById('val-kd').innerText = kd.toFixed(1);
+
+            // 2. Inverse Kinematics (Path Planning)
+            const x0 = 0;
+            const T = duration;
+            const a_req = (2 * (targetX - x0 - v0 * T)) / (T * T);
+
+            const timeData = [];
+            const idealXData = [];
+            const actualXData = [];
+            const errorData = [];
+
+            // 3. Control Loop Simulation
+            let currentX = 0;
+            let currentV = v0;
+            let integralError = 0;
+            let lastError = 0;
+
+            for (let i = 0; i < steps; i++) {
+                let t = i * dt;
+                timeData.push(t);
+
+                // Desired Position at time t (Forward Kinematics)
+                let idealX = x0 + v0 * t + 0.5 * a_req * (t * t);
+                idealXData.push(idealX);
+
+                // PID Logic
+                let error = idealX - currentX;
+                integralError += error * dt;
+                let derivativeError = (error - lastError) / dt;
+                
+                // Control Output (Acceleration command)
+                let u = (kp * error) + (ki * integralError) + (kd * derivativeError);
+                
+                // Physics Integration (Numerical Euler Method)
+                let accel = u; // In this model, PID output directly commands acceleration
+                currentV += accel * dt;
+                currentX += currentV * dt;
+
+                actualXData.push(currentX);
+                errorData.push(error);
+                lastError = error;
+            }
+
+            renderPlots(timeData, idealXData, actualXData, errorData);
+        }
+
+        function renderPlots(t, ideal, actual, error) {
+            const posTrace1 = {
+                x: t, y: ideal, name: 'Kinematic Goal (Reference)',
+                line: { color: '#94a3b8', dash: 'dash', width: 2 }
+            };
+            const posTrace2 = {
+                x: t, y: actual, name: 'Robot Position (PID Output)',
+                line: { color: '#4f46e5', width: 3 }
+            };
+
+            const errTrace = {
+                x: t, y: error, name: 'Tracking Error \(e(t)\)',
+                fill: 'tozeroy',
+                line: { color: '#ef4444' }
+            };
+
+            Plotly.react('plot-position', [posTrace1, posTrace2], {
+                title: 'Forward Kinematics vs. PID Control',
+                xaxis: { title: 'Time (s)' },
+                yaxis: { title: 'Position (m)' },
+                margin: { t: 50, r: 30, l: 50, b: 50 },
+                legend: { orientation: 'h', x: 0, y: 1.1 }
+            });
+
+            Plotly.react('plot-error', [errTrace], {
+                title: 'System Error \(e(t) = x_{ideal} - x_{actual}\)',
+                xaxis: { title: 'Time (s)' },
+                yaxis: { title: 'Error (m)' },
+                margin: { t: 50, r: 30, l: 50, b: 50 }
+            });
+        }
+
+        // Event Listeners
+        ['input-target', 'input-v0', 'input-kp', 'input-ki', 'input-kd'].forEach(id => {
+            document.getElementById(id).addEventListener('input', simulate);
+        });
+        document.getElementById('reset-btn').addEventListener('click', simulate);
+
+        window.onload = simulate;
+    </script>
+</body>
+</html>
