@@ -39,3 +39,9 @@ Click below to run the system online.
 Click below to run the system online.
 
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M06_Motion_Control_Tutorial.ipynb)
+
+## 7. Going to Tutorial 7: Robot Action Planning (Concepts and Applications)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M07_Action_Planning_Tutorial.ipynb)
