@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 7: Planning and Execution Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .dropdown-container { transition: all 0.3s ease; }
+        .correct { border-color: #10b981; background-color: #ecfdf5; }
+        .incorrect { border-color: #ef4444; background-color: #fef2f2; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #submit-btn.hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen py-10 px-4 font-sans text-slate-800">
+
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-indigo-600 p-8 text-white text-center">
+            <h1 class="text-3xl font-bold mb-2">Module 7 Quiz</h1>
+            <p class="text-indigo-100 italic">Planning and Execution</p>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="p-8 space-y-8">
+            <!-- Questions injected here -->
+        </div>
+
+        <!-- Footer / Score -->
+        <div class="bg-slate-100 p-8 border-t border-slate-200 text-center">
+            <button id="submit-btn" onclick="checkAllAnswers()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                Submit Quiz
+            </button>
+            
+            <div id="score-display" class="mt-6 hidden">
+                <p class="text-2xl font-bold" id="score-text"></p>
+                <button onclick="location.reload()" class="mt-4 text-indigo-600 font-medium hover:underline">Reset Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                section: "1. Action Models",
+                question: "In the Action Model for mobile manipulation, what defines an 'atomic trajectory'?",
+                options: ["An Action", "A Motion", "A Primitive", "A Fluent"],
+                answer: "A Motion",
+                hint: "Refers to the Flanagan model for segmentation."
+            },
+            {
+                section: "2. Motion Parameters & Failures",
+                question: "Which of the following is an example of 'intrinsic' perception?",
+                options: ["Scanning the room for a spoon", "Checking the gripper opening angle", "Estimating object weight", "LIDAR mapping"],
+                answer: "Checking the gripper opening angle",
+                hint: "Intrinsic perception concerns the robot's own body parts."
+            },
+            {
+                section: "2. Motion Parameters & Failures",
+                question: "A failure detected via simulation before the robot even moves is called a:",
+                options: ["Execution failure", "Post-execution failure", "Planning time failure", "Low-level failure"],
+                answer: "Planning time failure",
+                hint: "The robot 'anticipates' the failure."
+            },
+            {
+                section: "3. Failure Handling",
+                question: "What is the simplest strategy for handling failures in non-deterministic worlds?",
+                options: ["Ask for help", "Change the parameters", "Retry without change", "Global replanning"],
+                answer: "Retry without change",
+                hint: "Sometimes doing the same thing twice yields a different result."
+            },
+            {
+                section: "3. Failure Handling",
+                question: "In CPL, which operator is used to limit retries using a counter?",
+                options: ["with_retry_limit", "with_retry_counters", "while_failing", "max_attempts"],
+                answer: "with_retry_counters",
+                hint: "It defines a specific counter variable (e.g., perception_counter)."
+            },
+            {
+                section: "4. Reactive Planning",
+                question: "Which CPL operator runs its body in an infinite loop every time a fluent 'pulses'?",
+                options: ["wait_for", "pursue", "whenever", "in_parallel_do"],
+                answer: "whenever",
+                hint: "Used for continuous monitoring throughout the plan."
+            },
+            {
+                section: "4. Reactive Planning",
+                question: "The 'pursue' operator is primarily used for:",
+                options: ["Speeding up execution", "Implementing monitoring strategies", "Saving battery", "Calculating inverse kinematics"],
+                answer: "Implementing monitoring strategies",
+                hint: "It kills all remaining child threads when one finishes."
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz-container');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Render Questions
+        quizData.forEach((item, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'fade-in bg-white p-6 rounded-xl border border-slate-200';
+            questionDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">${item.section}</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-4">${item.question}</h3>
+                <div class="relative">
+                    <select id="q${index}" onchange="validateQuiz()" class="quiz-select w-full p-3 bg-slate-50 border border-slate-300 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="" disabled selected>Select an answer...</option>
+                        ${item.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="feedback-q${index}" class="hidden mt-4 p-3 rounded-lg text-sm"></div>
+            `;
+            quizContainer.appendChild(questionDiv);
+        });
+
+        function validateQuiz() {
+            const selects = document.querySelectorAll('.quiz-select');
+            const allFilled = Array.from(selects).every(s => s.value !== "");
+            
+            if (allFilled) {
+                submitBtn.classList.remove('hidden');
+            } else {
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function checkAllAnswers() {
+            let score = 0;
+            const total = quizData.length;
+
+            quizData.forEach((item, index) => {
+                const select = document.getElementById(`q${index}`);
+                const feedback = document.getElementById(`feedback-q${index}`);
+                const container = select.closest('.fade-in');
+                const userAnswer = select.value;
+
+                feedback.classList.remove('hidden');
+                select.disabled = true;
+                
+                if (userAnswer === item.answer) {
+                    score++;
+                    container.classList.add('correct');
+                    container.classList.remove('incorrect');
+                    feedback.innerHTML = `<span class="font-bold text-green-700">✓ Correct</span>`;
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-green-100 text-green-800';
+                } else {
+                    container.classList.add('incorrect');
+                    container.classList.remove('correct');
+                    feedback.innerHTML = `<span class="font-bold text-red-700">✗ Incorrect</span>. Try reviewing: <em>${item.hint}</em>`;
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800';
+                }
+            });
+
+            document.getElementById('score-display').classList.remove('hidden');
+            document.getElementById('score-text').innerText = `Final Score: ${score} / ${total}`;
+            submitBtn.classList.add('hidden');
+            
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
