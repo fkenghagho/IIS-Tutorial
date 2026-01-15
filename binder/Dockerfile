@@ -17,7 +17,7 @@ ENV ROS_WS=${HOME}/workspace/ros
     && apt-get clean && rm -rf /var/lib/apt/lists/*
      
  # ADDED opencv-python to the existing pip installation line
- RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python 
+ RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python pyswip
 
 #===========================================================#
 
