@@ -45,3 +45,16 @@ Click below to run the system online.
 Click below to run the system online.
 
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M07_Action_Planning_Tutorial.ipynb)
+
+## 8 Going to Tutorial 8: Knowledge Representation and Reasoning (Concepts and Applications)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M08_KRR_Tutorial.ipynb)
+
+
+## 9 Going to Final Project: IIS in PyBullet (Concepts and Applications)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://github.com/fkenghagho/iis-robot-project-win2025-2026)
