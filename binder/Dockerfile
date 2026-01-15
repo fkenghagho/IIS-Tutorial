@@ -9,8 +9,16 @@ ENV ROS_WS=${HOME}/workspace/ros
 
  USER root
  RUN apt update && apt install -y curl
+ RUN apt-get update && apt-get install -y \
+    swi-prolog \
+    libgl1-mesa-dev \
+    python3-opengl \
+    xvfb \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+     
  # ADDED opencv-python to the existing pip installation line
- RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python
+ RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python 
+
 #===========================================================#
 
 # Copy content to the image
