@@ -1,35 +1,27 @@
-# Dockerfile of the base image: https://github.com/IntEL4CoRo/docker-stacks/blob/master/Dockerfile
-FROM intel4coro/base-notebook:noetic
+# 1. Use the official Jupyter 3.10 image
+FROM jupyter/base-notebook:python-3.10
 
-# Path to the default ROS workspace
-ENV ROS_WS=${HOME}/workspace/ros
+USER root
 
-#============= Install extra software packages =============#
-# Examples:
-
- USER root
- RUN apt update && apt install -y curl
- RUN apt-get update && apt-get install -y \
+# 2. Install system dependencies (Logic + Graphics)
+RUN apt-get update && apt-get install -y \
     swi-prolog \
     libgl1-mesa-dev \
     python3-opengl \
     xvfb \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-     
- # ADDED opencv-python to the existing pip installation line
- RUN pip3 install numpy matplotlib scipy Pillow jupyter scikit-image jyro matplotlib ipywidgets widgetsnbextension opencv-python pyswip
 
-#===========================================================#
+USER ${NB_UID}
 
-# Copy content to the image
-ENV REPO_DIR=${HOME}/work
-WORKDIR ${REPO_DIR}
-COPY --chown=${NB_USER}:users . ${REPO_DIR}/
-RUN git config --global --add safe.directory ${REPO_DIR}
+# 3. Handle Python Requirements
+# Copy the requirements file from your computer into the Docker image
+COPY --chown=${NB_UID}:${NB_GID} ../requirements.txt /tmp/requirements.txt
 
-# Create a symbolic link to the ROS workspace under the working directory
-RUN ln -s ${ROS_WS} ${PWD}/ROS_WS
+# Install the libraries listed in that file
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# The entrypoint of the docker image
-COPY --chown=${NB_USER}:users binder/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+# 4. Set the Working Directory 
+WORKDIR /home/jovyan/work
+
+# 5. Copy the rest of your project (Notebooks, Images, URDFs)
+COPY --chown=${NB_UID}:${NB_GID} . /home/jovyan/work

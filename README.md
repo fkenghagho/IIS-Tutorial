@@ -50,7 +50,7 @@ Click below to run the system online.
 
 Click below to run the system online.
 
-[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/HEAD?labpath=notebooks/M08_KRR_Tutorial.ipynb)
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/devel?labpath=notebooks/M08_KRR_Tutorial.ipynb)
 
 
 ## 9 Going to Final Project: IIS in PyBullet (Concepts and Applications)
