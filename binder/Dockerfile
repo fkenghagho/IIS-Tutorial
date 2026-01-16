@@ -15,7 +15,7 @@ USER ${NB_UID}
 
 # 3. Handle Python Requirements
 # Copy the requirements file from your computer into the Docker image
-COPY --chown=${NB_UID}:${NB_GID} ../requirements.txt /tmp/requirements.txt
+COPY --chown=${NB_UID}:${NB_GID} ./requirements.txt /tmp/requirements.txt
 
 # Install the libraries listed in that file
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
