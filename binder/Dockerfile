@@ -13,15 +13,9 @@ RUN apt-get update && apt-get install -y \
 
 USER ${NB_UID}
 
-# 3. Handle Python Requirements
-# Copy the requirements file from your computer into the Docker image
-COPY --chown=${NB_UID}:${NB_GID} ../requirements.txt /tmp/requirements.txt
 
-# Install the libraries listed in that file
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
-# 4. Set the Working Directory 
+# 3. Set the Working Directory 
 WORKDIR /home/jovyan/work
 
-# 5. Copy the rest of your project (Notebooks, Images, URDFs)
+# 4. Copy the rest of your project (Notebooks, Images, URDFs)
 COPY --chown=${NB_UID}:${NB_GID} . /home/jovyan/work
