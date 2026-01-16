@@ -1,0 +1,16 @@
+# Simulation & Physics
+pybullet==3.2.5
+
+# Math & State Estimation (Particle Filter / PCA)
+numpy>=1.22.0
+scipy>=1.7.0
+
+# Knowledge Representation (Logic)
+pyswip
+
+# Perception & Vision
+opencv-python-headless>=4.5.0
+
+# Integration & Presentation
+pyvirtualdisplay  # For headless Binder rendering
+matplotlib        # For plotting Particle Filter distributions
