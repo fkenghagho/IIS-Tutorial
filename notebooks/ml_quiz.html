@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 9: Learning-enabled Robots Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .dropdown-container { transition: all 0.3s ease; }
+        .correct { border-color: #10b981; background-color: #ecfdf5; }
+        .incorrect { border-color: #ef4444; background-color: #fef2f2; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #submit-btn.hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen py-10 px-4 font-sans text-slate-800">
+
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-indigo-600 p-8 text-white text-center">
+            <h1 class="text-3xl font-bold mb-2">Module 9 Quiz</h1>
+            <p class="text-indigo-100 italic">Learning-enabled Robots</p>
+        </div>
+
+        <div id="quiz-container" class="p-8 space-y-8">
+            </div>
+
+        <div class="bg-slate-100 p-8 border-t border-slate-200 text-center">
+            <button id="submit-btn" onclick="checkAllAnswers()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                Submit Quiz
+            </button>
+            
+            <div id="score-display" class="mt-6 hidden">
+                <p class="text-2xl font-bold" id="score-text"></p>
+                <button onclick="location.reload()" class="mt-4 text-indigo-600 font-medium hover:underline">Reset Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                section: "1. Robots and Learning",
+                question: "In the general model for learning agents (Russell and Norvig), which component is responsible for suggesting actions that lead to new and informative experiences?",
+                options: ["The Critic", "The Learning Element", "The Performance Element", "The Problem Generator"],
+                answer: "The Problem Generator"
+            },
+            {
+                section: "1. Robots and Learning",
+                question: "What is the primary objective of 'Inductive Learning' as described in the lecture?",
+                options: ["To delete redundant data", "To approximate an unknown 'ideal' function with an 'actual' function", "To follow explicit human-coded instructions", "To minimize the energy consumption of the robot"],
+                answer: "To approximate an unknown 'ideal' function with an 'actual' function"
+            },
+            {
+                section: "1. Robots and Learning",
+                question: "Which type of learning is characterized by an agent being rewarded or punished based on the outcome of its actions?",
+                options: ["Supervised Learning", "Unsupervised Learning", "Reinforcement Learning", "Analytical Learning"],
+                answer: "Reinforcement Learning"
+            },
+            {
+                section: "2. Machine Learning Fundamentals",
+                question: "In Q-Learning, what is the purpose of the 'epsilon-greedy' policy?",
+                options: ["To maximize the processing speed", "To balance exploration of the environment and exploitation of known rewards", "To ignore noisy sensor data", "To determine the robot's mass"],
+                answer: "To balance exploration of the environment and exploitation of known rewards"
+            },
+            {
+                section: "2. Machine Learning Fundamentals",
+                question: "A Reinforcement Learning robot is described as being 'temporally situated'. What does this imply?",
+                options: ["It only learns once at the start of the mission", "It learns about, from, and while interacting with an external environment over time", "It can travel through time", "It uses a stopwatch for every action"],
+                answer: "It learns about, from, and while interacting with an external environment over time"
+            },
+            {
+                section: "2. Machine Learning Fundamentals",
+                question: "What is the 'Critic's' role in the Russell and Norvig learning agent architecture?",
+                options: ["To execute the actions", "To suggest new problems", "To provide feedback by comparing the agent's performance against a fixed standard", "To communicate with other robots"],
+                answer: "To provide feedback by comparing the agent's performance against a fixed standard"
+            },
+            {
+                section: "3. Deep Learning and Applications",
+                question: "Why are Convolutional Neural Networks (CNNs) particularly successful in robot vision?",
+                options: ["They use fewer layers than standard networks", "They take advantage of the 2D structures in image data", "They do not require training data", "They translate code into natural language"],
+                answer: "They take advantage of the 2D structures in image data"
+            },
+            {
+                section: "3. Deep Learning and Applications",
+                question: "What is 'Domain Adaptation' in the context of robot movement and action execution?",
+                options: ["Adapting a robot's physical structure to a new room", "Transferring learned actions between different agents or from simulation to reality", "Changing the robot's operating system", "Updating the project's README file"],
+                answer: "Transferring learned actions between different agents or from simulation to reality"
+            },
+            {
+                section: "3. Deep Learning and Applications",
+                question: "Which neural network architecture is heavily used for tasks involving temporal sequences, such as Robotic Natural Language Processing?",
+                options: ["CNNs", "RNNs (Recurrent Neural Networks)", "Decision Trees", "Linear Regression"],
+                answer: "RNNs (Recurrent Neural Networks)"
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz-container');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Render Questions
+        quizData.forEach((item, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'fade-in bg-white p-6 rounded-xl border border-slate-200';
+            questionDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">${item.section}</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-4">${item.question}</h3>
+                <div class="relative">
+                    <select id="q${index}" onchange="validateQuiz()" class="quiz-select w-full p-3 bg-slate-50 border border-slate-300 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="" disabled selected>Select an answer...</option>
+                        ${item.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="feedback-q${index}" class="hidden mt-4 p-3 rounded-lg text-sm"></div>
+            `;
+            quizContainer.appendChild(questionDiv);
+        });
+
+        function validateQuiz() {
+            const selects = document.querySelectorAll('.quiz-select');
+            const allFilled = Array.from(selects).every(s => s.value !== "");
+            if (allFilled) {
+                submitBtn.classList.remove('hidden');
+            } else {
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function checkAllAnswers() {
+            let score = 0;
+            const total = quizData.length;
+
+            quizData.forEach((item, index) => {
+                const select = document.getElementById(`q${index}`);
+                const feedback = document.getElementById(`feedback-q${index}`);
+                const container = select.closest('.fade-in');
+                const userAnswer = select.value;
+
+                feedback.classList.remove('hidden');
+                select.disabled = true;
+                
+                if (userAnswer === item.answer) {
+                    score++;
+                    container.classList.add('correct');
+                    container.classList.remove('incorrect');
+                    feedback.innerHTML = `<span class="font-bold text-green-700">✓ Correct</span>`;
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-green-100 text-green-800';
+                } else {
+                    container.classList.add('incorrect');
+                    container.classList.remove('correct');
+                    feedback.innerHTML = `<span class="font-bold text-red-700">✗ Incorrect</span> <br> The correct answer is: ${item.answer}`;
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800';
+                }
+            });
+
+            document.getElementById('score-display').classList.remove('hidden');
+            document.getElementById('score-text').innerText = `Final Score: ${score} / ${total}`;
+            submitBtn.classList.add('hidden');
+            
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
