@@ -53,7 +53,7 @@ Click below to run the system online.
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/devel?labpath=notebooks/M08_KRR_Tutorial.ipynb)
 
 
-## 9 Going to Tutorial 8: Machine Learning for Robots (Concepts and Applications)
+## 9 Going to Tutorial 9: Machine Learning for Robots (Concepts and Applications)
 
 Click below to run the system online.
 
