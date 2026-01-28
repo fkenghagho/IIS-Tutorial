@@ -59,6 +59,11 @@ Click below to run the system online.
 
 [<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/devel?labpath=notebooks/M09_ML_Tutorial.ipynb)
 
+## 10 Going to Tutorial 10: Robot Cognitive Architectures (Concepts and Applications)
+
+Click below to run the system online.
+
+[<img src="https://mybinder.org/badge_logo.svg">](https://binder.intel4coro.de/v2/gh/fkenghagho/IIS-Tutorial/devel?labpath=notebooks/M10_CA_Tutorial.ipynb)
 
 
 ## 11 Going to Final Project: IIS in PyBullet (Concepts and Applications)

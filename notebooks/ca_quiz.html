@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 10 Quiz: Cognitive Architectures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .correct { border: 2px solid #10b981 !important; background-color: #ecfdf5; }
+        .incorrect { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        #submit-btn.hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen py-10 px-4">
+
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-indigo-600 p-8 text-white text-center">
+            <h1 class="text-3xl font-bold">Module 10 Quiz</h1>
+            <p class="mt-2 opacity-90">Cognitive Architectures</p>
+        </div>
+
+        <div id="quiz-container" class="p-8 space-y-8"></div>
+
+        <div class="bg-slate-100 p-8 border-t border-slate-200 text-center">
+            <button id="submit-btn" onclick="checkAllAnswers()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-full transition-all">
+                Submit Quiz
+            </button>
+            
+            <div id="score-display" class="mt-6 hidden">
+                <p class="text-2xl font-bold" id="score-text"></p>
+                <button onclick="location.reload()" class="mt-4 text-indigo-600 font-medium hover:underline">Reset Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Lesson 1: Foundations
+            {
+                section: "1. Foundations",
+                question: "According to Ritter and Young (2001), what does a cognitive architecture encapsulate?",
+                options: ["Rapidly changing software updates", "Aspects of human cognition that are relatively constant over time", "Only the sensors of a robot", "The specific data for a single task"],
+                answer: "Aspects of human cognition that are relatively constant over time"
+            },
+            {
+                section: "1. Foundations",
+                question: "Which paradigm of cognitive science is often referred to as 'Symbolic'?",
+                options: ["Emergent", "Hybrid", "Cognitivist", "Connectionist"],
+                answer: "Cognitivist"
+            },
+            {
+                section: "1. Foundations",
+                question: "What is the chief characteristic of a cognitive agent?",
+                options: ["Processing speed", "Having a metallic body", "Acting effectively in an uncertain, under-specified, and dynamic world", "Following a fixed list of instructions"],
+                answer: "Acting effectively in an uncertain, under-specified, and dynamic world"
+            },
+            // Lesson 2: Example Cognitive Architectures
+            {
+                section: "2. Example Architectures",
+                question: "In the Soar architecture, what happens when the system encounters an 'impasse'?",
+                options: ["It shuts down", "It creates a new goal through universal sub-goaling", "It asks a human for help", "It deletes its memory"],
+                answer: "It creates a new goal through universal sub-goaling"
+            },
+            {
+                section: "2. Example Architectures",
+                question: "Which architecture is based on the idea of modeling human cognition using modules like Declarative and Procedural memory?",
+                options: ["Subsumption", "ACT-R", "ISAC", "CRAM"],
+                answer: "ACT-R"
+            },
+            {
+                section: "2. Example Architectures",
+                question: "In the ISAC architecture, which agent handles the immediate execution of a task?",
+                options: ["The Central Executive Agent", "The First Response Agent", "The Cognition Agent", "The Memory Agent"],
+                answer: "The First Response Agent"
+            },
+            // Lesson 3: CRAM Part 1
+            {
+                section: "3. CRAM Part 1",
+                question: "What is the key concept in CRAM for handling underdetermined action descriptions?",
+                options: ["Fixed Command Scripts", "Generalized Action Plans", "Manual Remote Control", "Hardware Upgrades"],
+                answer: "Generalized Action Plans"
+            },
+            {
+                section: "3. CRAM Part 1",
+                question: "CRAM is classified as what type of cognitive architecture?",
+                options: ["Purely Emergent", "Purely Cognitivist", "Hybrid", "Non-cognitive"],
+                answer: "Hybrid"
+            },
+            {
+                section: "3. CRAM Part 1",
+                question: "What language is the CRAM Plan Language (CPL) an extension of?",
+                options: ["Python", "C++", "Lisp", "Java"],
+                answer: "Lisp"
+            },
+            // Lesson 4: CRAM Part 2
+            {
+                section: "4. CRAM Part 2",
+                question: "What is the name of the process in CRAM that maps a generalized action plan to a specific motion plan?",
+                options: ["Compilation", "Contextualization", "Registration", "Simulating"],
+                answer: "Contextualization"
+            },
+            {
+                section: "4. CRAM Part 2",
+                question: "Which CRAM component is the 'Action Executive' responsible for executing motion plans?",
+                options: ["RoboSherlock", "KnowRob 2.0", "Giskard", "COGITO"],
+                answer: "Giskard"
+            },
+            {
+                section: "4. CRAM Part 2",
+                question: "In the contextualization process, what is the purpose of querying KnowRob 2.0?",
+                options: ["To find the values that maximize the likelihood of action success", "To connect to the internet", "To update the robot's operating system", "To turn on the cameras"],
+                answer: "To find the values that maximize the likelihood of action success"
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz-container');
+        const submitBtn = document.getElementById('submit-btn');
+
+        quizData.forEach((item, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.id = `card-${index}`;
+            questionDiv.className = 'bg-white p-6 rounded-xl border border-slate-200';
+            questionDiv.innerHTML = `
+                <div class="text-xs font-bold uppercase text-indigo-500 mb-2">${item.section}</div>
+                <h3 class="text-lg font-semibold mb-4">${item.question}</h3>
+                <select id="q${index}" onchange="validateQuiz()" class="quiz-select w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none">
+                    <option value="" disabled selected>Select an answer...</option>
+                    ${item.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+                <div id="feedback-q${index}" class="hidden mt-4 p-3 rounded-lg text-sm"></div>
+            `;
+            quizContainer.appendChild(questionDiv);
+        });
+
+        function validateQuiz() {
+            const selects = document.querySelectorAll('.quiz-select');
+            const allFilled = Array.from(selects).every(s => s.value !== "");
+            if (allFilled) {
+                submitBtn.classList.remove('hidden');
+            } else {
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function checkAllAnswers() {
+            let score = 0;
+            quizData.forEach((item, index) => {
+                const select = document.getElementById(`q${index}`);
+                const feedback = document.getElementById(`feedback-q${index}`);
+                const card = document.getElementById(`card-${index}`);
+                
+                select.disabled = true;
+                feedback.classList.remove('hidden');
+                
+                if (select.value === item.answer) {
+                    score++;
+                    card.classList.add('correct');
+                    feedback.innerHTML = "✓ Correct";
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-green-100 text-green-800 font-bold';
+                } else {
+                    card.classList.add('incorrect');
+                    feedback.innerHTML = `✗ Incorrect. Correct: ${item.answer}`;
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 font-bold';
+                }
+            });
+
+            submitBtn.classList.add('hidden');
+            document.getElementById('score-display').classList.remove('hidden');
+            document.getElementById('score-text').innerText = `Final Score: ${score} / ${quizData.length}`;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
